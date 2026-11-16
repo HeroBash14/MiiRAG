@@ -1,0 +1,202 @@
+from pathlib import Path
+
+import pymupdf
+
+
+def generate_query_svg() -> str:
+    return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 790" width="1320" height="790">
+  <defs>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7" />
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed" />
+    </marker>
+    <marker id="arr-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ea580c" />
+    </marker>
+  </defs>
+
+  <!-- Background: Clean Bright Surface -->
+  <rect width="1320" height="790" fill="#f8fafc" />
+
+  <!-- Subtle Blueprint Grid Pattern -->
+  <g opacity="0.35" stroke="#cbd5e1" stroke-width="1">
+    <line x1="0" y1="100" x2="1320" y2="100" />
+    <line x1="0" y1="405" x2="1320" y2="405" />
+    <line x1="330" y1="0" x2="330" y2="790" />
+    <line x1="660" y1="0" x2="660" y2="790" />
+    <line x1="990" y1="0" x2="990" y2="790" />
+  </g>
+
+  <!-- Header -->
+  <g transform="translate(60, 36)">
+    <rect x="-8" y="-6" width="46" height="46" rx="10" fill="#e0f2fe" stroke="#0284c7" stroke-width="2" />
+    <text x="6" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" fill="#0284c7">&#128269;</text>
+    <text x="50" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="25" font-weight="800" fill="#0f172a">MiiRAG Hybrid Retrieval &amp; Reranking Pipeline</text>
+    <text x="50" y="40" font-family="system-ui, -apple-system, sans-serif" font-size="13.5" font-weight="500" fill="#475569">Query Enhancement (HyDE / Expansion) &#8594; Dense HNSW + Sparse FTS (RRF) &#8594; Cross-Encoder Rerank &#8594; Context &amp; MinIO Grounding</text>
+  </g>
+
+  <!-- FLOW STEPS: 4 COLUMNS (TOP ROW) -->
+  <!-- STEP 1: QUERY REQUEST & MODES -->
+  <g transform="translate(50, 108)">
+    <rect width="275" height="270" rx="12" fill="#ffffff" stroke="#10b981" stroke-width="2" />
+    <rect x="16" y="14" width="60" height="20" rx="4" fill="#ecfdf5" />
+    <text x="22" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="800" fill="#059669">STEP 1</text>
+    <text x="84" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Query &amp; Retrieval Mode</text>
+
+    <text x="16" y="56" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#334155">&#8226; <tspan font-family="monospace" font-size="11" fill="#0284c7">POST /api/v1/query</tspan></text>
+    <text x="16" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; search_mode:</text>
+    <text x="26" y="100" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#059669">- <tspan font-weight="700">hybrid</tspan> (Dense + FTS RRF)</text>
+    <text x="26" y="118" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700">dense</tspan> (Vector cosine only)</text>
+    <text x="26" y="136" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700">keyword</tspan> (FTS GIN only)</text>
+
+    <text x="16" y="162" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Precision Toggles:</text>
+    <text x="26" y="182" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700">use_rerank</tspan> (Default: true)</text>
+    <text x="26" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700">use_query_expansion</tspan></text>
+    <text x="26" y="218" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700">use_hyde</tspan> &amp; <tspan font-weight="700">expand_context</tspan></text>
+
+    <rect x="16" y="236" width="135" height="18" rx="4" fill="#ecfdf5" />
+    <text x="22" y="249" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#059669">&#10003; top_k &amp; score_threshold</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <path d="M 325 243 L 365 243" stroke="#059669" stroke-width="2.5" fill="none" marker-end="url(#arr-green)" />
+
+  <!-- STEP 2: QUERY ENHANCEMENT & VECTORIZER -->
+  <g transform="translate(365, 108)">
+    <rect width="285" height="270" rx="12" fill="#ffffff" stroke="#0284c7" stroke-width="2" />
+    <rect x="16" y="14" width="60" height="20" rx="4" fill="#e0f2fe" />
+    <text x="22" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="800" fill="#0369a1">STEP 2</text>
+    <text x="84" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Enhance &amp; Vectorize</text>
+
+    <text x="16" y="56" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Query Enhancement:</text>
+    <text x="26" y="76" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700" fill="#0369a1">HyDE</tspan>: LLM / Heuristic passage</text>
+    <text x="26" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">  blended L2 (0.35 Q + 0.65 HyDE)</text>
+    <text x="26" y="114" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700" fill="#0369a1">Expansion</tspan>: Synonym dictionary</text>
+
+    <text x="16" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Dense + Sparse Inputs:</text>
+    <text x="26" y="160" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#7e22ce">- <tspan font-weight="700">BAAI/bge-m3</tspan> &#8594; 1024-dim vector</text>
+    <text x="26" y="178" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">- Stopword filter + <tspan font-family="monospace" font-weight="700">OR-tsquery</tspan></text>
+    <text x="26" y="196" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">  e.g. <tspan font-family="monospace">'sop | chil | 09 | chiller'</tspan></text>
+
+    <rect x="16" y="236" width="165" height="18" rx="4" fill="#e0f2fe" />
+    <text x="22" y="249" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#0369a1">&#10003; Dual Query Representation</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <path d="M 650 243 L 690 243" stroke="#0284c7" stroke-width="2.5" fill="none" marker-end="url(#arr-blue)" />
+
+  <!-- STEP 3: HYBRID PGVECTOR + FTS RRF -->
+  <g transform="translate(690, 108)">
+    <rect width="300" height="270" rx="12" fill="#ffffff" stroke="#7c3aed" stroke-width="2" />
+    <rect x="16" y="14" width="60" height="20" rx="4" fill="#f3e8ff" />
+    <text x="22" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="800" fill="#7e22ce">STEP 3</text>
+    <text x="84" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Hybrid PostgreSQL RRF</text>
+
+    <text x="16" y="56" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Branch A (Dense Semantic):</text>
+    <text x="26" y="76" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700" fill="#7e22ce">pgvector HNSW</tspan> (<tspan font-family="monospace">&lt;=&gt;</tspan> cosine)</text>
+    <text x="26" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-family="monospace">iterative_scan = relaxed_order</tspan></text>
+
+    <text x="16" y="120" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Branch B (Sparse Exact Keyword):</text>
+    <text x="26" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700" fill="#059669">GIN tsvector</tspan> ('simple' config)</text>
+    <text x="26" y="158" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- Indexes header + content via <tspan font-family="monospace">ts_rank_cd</tspan></text>
+
+    <text x="16" y="184" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Reciprocal Rank Fusion:</text>
+    <text x="26" y="204" font-family="monospace" font-size="10.5" fill="#7e22ce">0.65/(60+r_dense) + 0.35/(60+r_fts)</text>
+    <text x="26" y="222" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- Fetches Top-20 candidates (~10ms)</text>
+
+    <rect x="16" y="236" width="175" height="18" rx="4" fill="#f3e8ff" />
+    <text x="22" y="249" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#7e22ce">&#10003; Contextual + Exact Code Rescue</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <path d="M 990 243 L 1030 243" stroke="#7c3aed" stroke-width="2.5" fill="none" marker-end="url(#arr-purple)" />
+
+  <!-- STEP 4: RERANKER + CONTEXT + MINIO -->
+  <g transform="translate(1030, 108)">
+    <rect width="240" height="270" rx="12" fill="#ffffff" stroke="#ea580c" stroke-width="2" />
+    <rect x="16" y="14" width="60" height="20" rx="4" fill="#fff7ed" />
+    <text x="22" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="800" fill="#c2410c">STEP 4</text>
+    <text x="84" y="29" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#0f172a">Rerank &amp; Enrich</text>
+
+    <text x="16" y="56" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Cross-Encoder Rerank:</text>
+    <text x="26" y="76" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- <tspan font-weight="700" fill="#c2410c">mmarco-mMiniLMv2</tspan></text>
+    <text x="26" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- FP16 CUDA (~226MB VRAM)</text>
+    <text x="26" y="112" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- Joint query+header+text score</text>
+
+    <text x="16" y="138" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#0f172a">&#8226; Context &amp; Snapshots:</text>
+    <text x="26" y="158" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- Filter threshold &amp; slice Top-K</text>
+    <text x="26" y="176" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- Merge chunk <tspan font-family="monospace">idx ± 1</tspan> (optional)</text>
+    <text x="26" y="194" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">- MinIO Presigned URL (30m)</text>
+
+    <rect x="16" y="236" width="145" height="18" rx="4" fill="#fff7ed" />
+    <text x="22" y="249" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#c2410c">&#10003; Top-K Precision Ordering</text>
+  </g>
+
+  <!-- Connect Step 4 down to Step 5 -->
+  <path d="M 1150 378 L 1150 408 L 660 408 L 660 434" stroke="#059669" stroke-width="2.5" fill="none" marker-end="url(#arr-green)" />
+
+  <!-- STEP 5: FINAL STRUCTURED RESPONSE (Bottom Banner) -->
+  <g transform="translate(50, 440)">
+    <rect width="1220" height="310" rx="14" fill="#ffffff" stroke="#10b981" stroke-width="2" />
+    <rect x="25" y="16" width="60" height="22" rx="4" fill="#ecfdf5" />
+    <text x="31" y="31" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="800" fill="#059669">STEP 5</text>
+    <text x="95" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="700" fill="#0f172a">Enriched Response Delivery to Frontend UI &amp; AI Agent LLM</text>
+    <text x="25" y="55" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#475569">Returns clean Markdown tables, section breadcrumbs, dual-scoring transparency (similarity, keyword, rerank), and visual MinIO page snapshots</text>
+
+    <!-- Response Payload Box (Left) -->
+    <g transform="translate(25, 74)">
+      <rect width="575" height="212" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+      <rect x="14" y="12" width="195" height="20" rx="4" fill="#e0f2fe" />
+      <text x="22" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#0369a1">Enriched JSON Response Schema</text>
+
+      <text x="14" y="52" font-family="monospace" font-size="11" fill="#475569">"search_mode": "hybrid", "reranked": true, "latency_ms": 161,</text>
+      <text x="14" y="72" font-family="monospace" font-size="11" fill="#0369a1">"enhancement_used": "hyde_heuristic+expansion",</text>
+      <text x="14" y="92" font-family="monospace" font-size="11" fill="#475569">"section_title": "SOP Cafe > 2. Kode Alat &amp; Sanitasi",</text>
+      <text x="14" y="112" font-family="monospace" font-size="11" fill="#059669">"similarity_score": 0.74, "keyword_score": 0.29, "rerank_score": 0.94,</text>
+      <text x="14" y="132" font-family="monospace" font-size="11" fill="#7e22ce">"content": "| Kode Alat | Nama Peralatan | ...\n| SOP-CHIL-09 |...",</text>
+      <text x="14" y="152" font-family="monospace" font-size="11" fill="#475569">"expanded_content": "...(optional chunk_index ± 1 context)...",</text>
+      <text x="14" y="172" font-family="monospace" font-size="11" fill="#ea580c">"page_image_url": "https://minio.../page_2.png?X-Amz-..."</text>
+
+      <rect x="14" y="184" width="185" height="18" rx="4" fill="#ecfdf5" />
+      <text x="22" y="197" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#059669">&#10003; Ready for Agent &amp; RAG Evaluation</text>
+    </g>
+
+    <!-- Benefits Box (Right) -->
+    <g transform="translate(620, 74)">
+      <rect width="575" height="212" rx="10" fill="#f0fdf4" stroke="#a7f3d0" stroke-width="1.5" />
+      <rect x="14" y="12" width="252" height="20" rx="4" fill="#dcfce7" />
+      <text x="22" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#15803d">Benchmark-Verified Retrieval Advantages</text>
+
+      <text x="14" y="54" font-family="system-ui, -apple-system, sans-serif" font-size="11.5" fill="#0f172a">&#9989; <tspan font-weight="700">Exact Code Rescue:</tspan> FTS GIN finds exact SOP/SKU codes even when dense cosine is low.</text>
+      <text x="14" y="88" font-family="system-ui, -apple-system, sans-serif" font-size="11.5" fill="#0f172a">&#9989; <tspan font-weight="700">Cross-Encoder Precision:</tspan> Eliminates false positives via joint query-document attention.</text>
+      <text x="14" y="122" font-family="system-ui, -apple-system, sans-serif" font-size="11.5" fill="#0f172a">&#9989; <tspan font-weight="700">Contextual Breadcrumbs:</tspan> Propagates parent section titles across pages &amp; split tables.</text>
+      <text x="14" y="156" font-family="system-ui, -apple-system, sans-serif" font-size="11.5" fill="#0f172a">&#9989; <tspan font-weight="700">Predictable Latency:</tspan> Hybrid RRF ~35ms | Hybrid + Rerank ~161ms (GTX 1650 FP16).</text>
+      <text x="14" y="190" font-family="system-ui, -apple-system, sans-serif" font-size="11.5" fill="#0f172a">&#9989; <tspan font-weight="700">Multimodal Grounding:</tspan> Preserves pure Markdown tables + 150 DPI page PNG URLs.</text>
+    </g>
+  </g>
+</svg>"""
+
+
+def render_query_diagram() -> None:
+    svg_str = generate_query_svg()
+    out_dir = Path("docs/images")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    svg_path = out_dir / "query_retrieval_flow.svg"
+    png_path = out_dir / "query_retrieval_flow.png"
+
+    svg_path.write_text(svg_str, encoding="utf-8")
+
+    doc = pymupdf.open(stream=svg_str.encode("utf-8"), filetype="svg")
+    pix = doc[0].get_pixmap(dpi=180)
+    pix.save(str(png_path))
+    print(f"Generated: {svg_path} and {png_path} ({pix.width}x{pix.height})")
+
+
+if __name__ == "__main__":
+    render_query_diagram()

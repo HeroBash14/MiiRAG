@@ -1,0 +1,220 @@
+from pathlib import Path
+
+import pymupdf
+
+
+def generate_architecture_svg() -> str:
+    return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 860" width="1320" height="860">
+  <defs>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#059669" />
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed" />
+    </marker>
+    <marker id="arr-gray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+    </marker>
+  </defs>
+
+  <!-- Background: Crisp Bright Canvas -->
+  <rect width="1320" height="860" fill="#f8fafc" />
+
+  <!-- Subtle Blueprint Grid Pattern -->
+  <g opacity="0.4" stroke="#e2e8f0" stroke-width="1">
+    <line x1="0" y1="110" x2="1320" y2="110" />
+    <line x1="0" y1="265" x2="1320" y2="265" />
+    <line x1="0" y1="610" x2="1320" y2="610" />
+    <line x1="330" y1="0" x2="330" y2="860" />
+    <line x1="660" y1="0" x2="660" y2="860" />
+    <line x1="990" y1="0" x2="990" y2="860" />
+  </g>
+
+  <!-- Header Banner -->
+  <g transform="translate(60, 40)">
+    <rect x="-8" y="-6" width="46" height="46" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2" />
+    <text x="6" y="27" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="900" fill="#059669">M</text>
+    <text x="50" y="20" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="800" fill="#0f172a">MiiRAG System Architecture</text>
+    <text x="50" y="40" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#475569">Multi-Format Knowledge Base with Hybrid Markdown Decoding, BAAI/bge-m3, pgvector &amp; MinIO</text>
+  </g>
+
+  <!-- LAYER 1: CLIENT TIER (Frontend SPA) -->
+  <g transform="translate(60, 115)">
+    <rect width="1200" height="120" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    
+    <!-- Header Pill -->
+    <rect x="25" y="16" width="150" height="24" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1" />
+    <text x="35" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#1d4ed8">1. CLIENT LAYER</text>
+    <text x="185" y="33" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#0f172a">React 19 + TypeScript + Vite SPA (Port 3000 / 3001)</text>
+
+    <!-- Subcards -->
+    <g transform="translate(25, 55)">
+      <rect width="270" height="48" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+      <text x="14" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#0f172a">&#128196; Multi-Format Dropzone</text>
+      <text x="14" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748b">Accepts .pdf, .docx, and .pptx</text>
+    </g>
+    <g transform="translate(315, 55)">
+      <rect width="270" height="48" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+      <text x="14" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#0f172a">&#9881; Knowledge Versioning</text>
+      <text x="14" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748b">Re-new workflow (v1 &rarr; v2 &rarr; v3)</text>
+    </g>
+    <g transform="translate(605, 55)">
+      <rect width="275" height="48" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+      <text x="14" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#0f172a">&#128269; Real-Time Semantic Search</text>
+      <text x="14" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748b">Filter by knowledge, top_k, threshold</text>
+    </g>
+    <g transform="translate(900, 55)">
+      <rect width="275" height="48" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" />
+      <text x="14" y="22" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#0f172a">&#128444; Markdown &amp; Snapshot Viewer</text>
+      <text x="14" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#64748b">HTML native table &amp; MinIO preview</text>
+    </g>
+  </g>
+
+  <!-- Connection: Client -> Backend -->
+  <path d="M 660 235 L 660 280" stroke="#059669" stroke-width="2.5" fill="none" marker-end="url(#arr-green)" />
+  <rect x="580" y="247" width="160" height="22" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" />
+  <text x="590" y="262" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#065f46">REST API / JSON HTTP</text>
+
+  <!-- LAYER 2: BACKEND API & INGESTION SERVICES -->
+  <g transform="translate(60, 285)">
+    <rect width="1200" height="305" rx="14" fill="#ffffff" stroke="#10b981" stroke-width="2" />
+    
+    <!-- Header Pill -->
+    <rect x="25" y="16" width="160" height="24" rx="6" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" />
+    <text x="35" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#065f46">2. APPLICATION LAYER</text>
+    <text x="195" y="33" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#0f172a">FastAPI Backend + Async Services (Python 3.11+ / Uvicorn Port 8000)</text>
+
+    <!-- Services Grid (4 Columns) -->
+    <!-- Card 1: Storage Service -->
+    <g transform="translate(25, 55)">
+      <rect width="270" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+      <rect x="14" y="14" width="105" height="20" rx="4" fill="#e0f2fe" />
+      <text x="20" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#0369a1">Storage Service</text>
+      
+      <text x="14" y="52" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0f172a">storage_service.py</text>
+      <text x="14" y="74" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; SHA-256 Deduplication</text>
+      <text x="14" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; Magic Header Inspection:</text>
+      <rect x="22" y="102" width="225" height="22" rx="4" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1" />
+      <text x="30" y="117" font-family="monospace" font-size="11" fill="#0f172a">%PDF- | PK\x03\x04 (ZIP)</text>
+      <text x="14" y="144" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; File Size Limit Check (50 MB)</text>
+      <text x="14" y="164" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; Safe Filename Sanitization</text>
+      
+      <rect x="14" y="185" width="95" height="22" rx="4" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1" />
+      <text x="22" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#065f46">&#10003; Storage Safe</text>
+    </g>
+
+    <!-- Card 2: Hybrid Markdown Decoder -->
+    <g transform="translate(315, 55)">
+      <rect width="280" height="225" rx="10" fill="#f0fdf4" stroke="#34d399" stroke-width="1.5" />
+      <rect x="14" y="14" width="150" height="20" rx="4" fill="#dcfce7" />
+      <text x="20" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#15803d">Hybrid Markdown Decoder</text>
+      
+      <text x="14" y="52" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0f172a">pdf_service.py</text>
+      <text x="14" y="74" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; PyMuPDF Table Grid Finder</text>
+      <text x="14" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; LibreOffice Headless (soffice)</text>
+      <text x="14" y="114" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; python-docx &amp; python-pptx AST</text>
+      <text x="14" y="134" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; Speaker Notes &amp; Headings (#)</text>
+      <text x="14" y="154" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; Table-Aware Row Chunking</text>
+      
+      <rect x="14" y="185" width="125" height="22" rx="4" fill="#dcfce7" stroke="#86efac" stroke-width="1" />
+      <text x="22" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#166534">&#10003; Page-Preserving</text>
+    </g>
+
+    <!-- Card 3: Embedding Engine -->
+    <g transform="translate(615, 55)">
+      <rect width="270" height="225" rx="10" fill="#faf5ff" stroke="#c084fc" stroke-width="1.5" />
+      <rect x="14" y="14" width="120" height="20" rx="4" fill="#f3e8ff" />
+      <text x="20" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#7e22ce">Embedding Engine</text>
+      
+      <text x="14" y="52" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0f172a">embedding_service.py</text>
+      <text x="14" y="74" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; Model: <tspan font-weight="700" fill="#7e22ce">BAAI/bge-m3</tspan></text>
+      <text x="14" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; Local PyTorch CUDA / CPU</text>
+      <text x="14" y="114" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; 1024-Dimension Float Vectors</text>
+      <text x="14" y="134" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; Mini-Batch Inference (batch=16)</text>
+      <text x="14" y="154" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#334155">&#8226; L2-Normalized Cosine Metric</text>
+      
+      <rect x="14" y="185" width="140" height="22" rx="4" fill="#f3e8ff" stroke="#d8b4fe" stroke-width="1" />
+      <text x="22" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#6b21a8">&#10003; 1024-dim Local SOTA</text>
+    </g>
+
+    <!-- Card 4: Worker & Query Pipeline -->
+    <g transform="translate(905, 55)">
+      <rect width="270" height="225" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+      <rect x="14" y="14" width="135" height="20" rx="4" fill="#e0e7ff" />
+      <text x="20" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#3730a3">Worker &amp; Query Repo</text>
+      
+      <text x="14" y="52" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#0f172a">worker_service / query_repo</text>
+      <text x="14" y="74" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; Asyncio Background Worker</text>
+      <text x="14" y="94" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; Non-blocking HTTP Response</text>
+      <text x="14" y="114" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; Cosine Similarity Search (&lt;=&gt;)</text>
+      <text x="14" y="134" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; MinIO S3 Presigned Signer</text>
+      <text x="14" y="154" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">&#8226; Sub-10ms Query Latency</text>
+      
+      <rect x="14" y="185" width="115" height="22" rx="4" fill="#e0e7ff" stroke="#c7d2fe" stroke-width="1" />
+      <text x="22" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#3730a3">&#10003; Asyncpg Pooling</text>
+    </g>
+  </g>
+
+  <!-- Connectors Backend -> Persistence Layer -->
+  <path d="M 455 590 L 455 640" stroke="#059669" stroke-width="2" fill="none" marker-end="url(#arr-green)" />
+  <path d="M 750 590 L 750 640" stroke="#7c3aed" stroke-width="2" fill="none" marker-end="url(#arr-purple)" />
+  <path d="M 1040 590 L 1040 640" stroke="#2563eb" stroke-width="2" fill="none" marker-end="url(#arr-blue)" />
+
+  <!-- LAYER 3: PERSISTENCE & STORAGE LAYER -->
+  <g transform="translate(60, 645)">
+    <rect width="1200" height="175" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
+    
+    <!-- Header Pill -->
+    <rect x="25" y="16" width="160" height="24" rx="6" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1" />
+    <text x="35" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="700" fill="#334155">3. PERSISTENCE LAYER</text>
+    <text x="195" y="33" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="600" fill="#0f172a">Dual Storage Architecture: Relational + Vector (pgvector) and Object Storage (MinIO)</text>
+
+    <!-- PostgreSQL pgvector -->
+    <g transform="translate(25, 52)">
+      <rect width="370" height="105" rx="10" fill="#faf5ff" stroke="#c084fc" stroke-width="1.5" />
+      <text x="16" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#6b21a8">&#128450; PostgreSQL 16 + pgvector</text>
+      <text x="16" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">Tables: knowledges, versions, documents, chunks</text>
+      <text x="16" y="66" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">HNSW Index: m=16, ef_construction=64, vector_cosine_ops</text>
+      <text x="16" y="86" font-family="monospace" font-size="11" font-weight="700" fill="#7e22ce">&#10003; Volume: miirag_pgdata (Persistent on Host)</text>
+    </g>
+
+    <!-- MinIO Object Storage -->
+    <g transform="translate(415, 52)">
+      <rect width="370" height="105" rx="10" fill="#fff7ed" stroke="#fb923c" stroke-width="1.5" />
+      <text x="16" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#c2410c">&#9729; MinIO S3 Object Storage</text>
+      <text x="16" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">Bucket: evorag / documents/{kid}/{doc_id}/</text>
+      <text x="16" y="66" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">Page Snapshots: 150 DPI PNG rasterized images</text>
+      <text x="16" y="86" font-family="monospace" font-size="11" font-weight="700" fill="#ea580c">&#10003; Presigned URL Expiry: 1800s (Visual Grounding)</text>
+    </g>
+
+    <!-- Local File Uploads -->
+    <g transform="translate(805, 52)">
+      <rect width="370" height="105" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1" />
+      <text x="16" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#1e293b">&#128193; Local Raw Document Storage</text>
+      <text x="16" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">Path: ./storage/uploads/{knowledge_id}/</text>
+      <text x="16" y="66" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#475569">Stores original binary files (.pdf, .docx, .pptx)</text>
+      <text x="16" y="86" font-family="monospace" font-size="11" font-weight="700" fill="#475569">&#10003; Preserved for version re-new diffing</text>
+    </g>
+  </g>
+</svg>"""
+
+def render_diagram():
+    svg_str = generate_architecture_svg()
+    out_dir = Path("docs/images")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    
+    svg_path = out_dir / "architecture_overview.svg"
+    png_path = out_dir / "architecture_overview.png"
+    
+    svg_path.write_text(svg_str, encoding="utf-8")
+    
+    doc = pymupdf.open(stream=svg_str.encode("utf-8"), filetype="svg")
+    pix = doc[0].get_pixmap(dpi=180)
+    pix.save(str(png_path))
+    print(f"Generated: {svg_path} and {png_path} ({pix.width}x{pix.height})")
+
+if __name__ == "__main__":
+    render_diagram()
