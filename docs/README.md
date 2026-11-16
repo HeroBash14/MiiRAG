@@ -23,11 +23,16 @@ Dokumentasi ini disusun untuk mempermudah developer, AI engineer, maupun DevOps 
    * Algoritma *Table-Aware Semantic Chunking* + *Contextual Chunk Headers*.
    * Model Vektor Embedding `BAAI/bge-m3` (1024 Dimensi).
 
-3. [**Metode Query & Retrieval (`RETRIEVAL_METHODS.md`)**](RETRIEVAL_METHODS.md)
+3. [**Metode Query & Retrieval (`RETRIEVAL_METHODS.md`)**](RETRIEVAL_METHODS.md) *(Referensi Teknis)*
    * Diagram Alur Hybrid Retrieval & Cross-Encoder Reranking.
    * 3 Mode Retrieval (`hybrid` dengan RRF, `dense`, `keyword`).
    * Penjelasan Fitur Peningkatan Query: *Cross-Encoder Reranker*, *Query Expansion*, *HyDE*, dan *Expand Context*.
    * Spesifikasi JSON API `/api/v1/query`, interpretasi skor, *Decision Matrix*, dan hasil benchmark kuantitatif (`scripts/evaluate_rag.py`).
+
+4. [**Panduan Memilih Metode Pencarian (`RETRIEVAL_USER_GUIDE.md`)**](RETRIEVAL_USER_GUIDE.md) *(Untuk Pengguna Awam / Non-Teknis)*
+   * Penjelasan sederhana tiap opsi dropdown dan checkbox di halaman **Query Knowledge** beserta analogi nyata.
+   * Efek masing-masing metode terhadap akurasi, kelengkapan hasil, dan kecepatan.
+   * Cara membaca label skor (`Rerank %`, `Kemiripan %`, `FTS`) dan rekomendasi paket setting siap pakai.
 
 ---
 

@@ -1,6 +1,8 @@
 # Metode Query & Retrieval di MiiRAG
 
-Dokumen ini menjelaskan secara menyeluruh seluruh metode pencarian (*retrieval*), peningkatan query (*query enhancement*), pemeringkatan ulang (*reranking*), ekspansi konteks, serta evaluasi kuantitatif yang tersedia pada endpoint `POST /api/v1/query` maupun antarmuka **Query Knowledge** di Frontend.
+Dokumen ini menjelaskan secara teknis seluruh metode pencarian (*retrieval*), peningkatan query (*query enhancement*), pemeringkatan ulang (*reranking*), ekspansi konteks, serta evaluasi kuantitatif yang tersedia pada endpoint `POST /api/v1/query` maupun antarmuka **Query Knowledge** di Frontend.
+
+> 💡 **Ingin penjelasan yang lebih santai untuk pengguna awam (non-teknis)?** Baca [**Panduan Memilih Metode Pencarian (`RETRIEVAL_USER_GUIDE.md`)**](RETRIEVAL_USER_GUIDE.md) yang menjelaskan fungsi tiap tombol/dropdown, efeknya, dan kapan harus memilihnya tanpa istilah teknis rumit.
 
 ---
 
