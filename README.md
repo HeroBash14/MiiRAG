@@ -2,6 +2,8 @@
 
 Platform RAG performa tinggi untuk dokumen multi-format (**PDF**, **Word `.docx`**, **PowerPoint `.pptx`**, **Excel `.xlsx`**, dan **CSV `.csv`**) menggunakan **FastAPI**, **Hybrid Markdown Decoder**, **Dual-Representation Spreadsheet Parser**, embedding lokal **`BAAI/bge-m3` (1024 Dimensi)**, **PostgreSQL + `pgvector`**, dan **MinIO Object Storage** untuk visual grounding.
 
+![MiiRAG Knowledge Base Web UI](docs/images/knowledge_ui_overview.png)
+
 ---
 
 ## 📖 Dokumentasi Lengkap & Arsitektur

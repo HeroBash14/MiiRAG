@@ -45,6 +45,7 @@ Seluruh diagram sistem telah diekspor dalam resolusi tinggi dan tersedia dalam d
 | **System Architecture Overview** | [Lihat PNG](images/architecture_overview.png) | [Buka SVG](images/architecture_overview.svg) |
 | **Ingestion & Embedding Pipeline** | [Lihat PNG](images/embedding_pipeline_flow.png) | [Buka SVG](images/embedding_pipeline_flow.svg) |
 | **Query & Retrieval Lifecycle** | [Lihat PNG](images/query_retrieval_flow.png) | [Buka SVG](images/query_retrieval_flow.svg) |
+| **Knowledge Base Web UI** | [Lihat PNG](images/knowledge_ui_overview.png) | - |
 
 ---
 
