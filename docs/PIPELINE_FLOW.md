@@ -17,10 +17,11 @@ Dokumen ini menjelaskan alur kerja (*end-to-end pipeline flow*) dari saat dokume
 ### Tahap 1: Upload & Pemeriksaan Integritas (*Magic Header Check*)
 Setiap file yang dikirimkan ke endpoint `POST /api/v1/knowledges` atau `POST /api/v1/knowledges/{id}/renew` melalui proses validasi ketat di [`app/services/storage_service.py`](../app/services/storage_service.py):
 1. **Batas Ukuran:** File diperiksa terhadap batas `MAX_UPLOAD_SIZE_MB` (default: 50MB).
-2. **Ekstensi Dokumen:** Hanya format `.pdf`, `.docx`, dan `.pptx` yang diizinkan.
-3. **Pemeriksaan Magic Byte (Header Asli):**
+2. **Ekstensi Dokumen:** Format yang diizinkan adalah `.pdf`, `.docx`, `.pptx`, `.xlsx`, dan `.csv`.
+3. **Pemeriksaan Magic Byte & Integritas File:**
    * File `.pdf` wajib diawali dengan byte `%PDF-` (`b"%PDF-"`).
-   * File `.docx` dan `.pptx` (arsip OpenXML berbasis ZIP) wajib diawali dengan byte `PK\x03\x04` (`b"PK\x03\x04"`).
+   * File `.docx`, `.pptx`, dan `.xlsx` (arsip OpenXML berbasis ZIP) wajib diawali dengan byte `PK\x03\x04` (`b"PK\x03\x04"`).
+   * File `.csv` diperiksa agar bukan file biner (tidak mengandung *null byte* `\x00` maupun header PDF/ZIP) dan dapat didekodekan sebagai teks valid (`UTF-8-SIG` / `UTF-8` / `CP1252` / `Latin-1`).
    * Pemeriksaan ini mencegah file berbahaya atau rusak yang sengaja dinamai ulang ekstensinya.
 4. **Hashing SHA-256:** Konten file di-hash untuk integritas data dan deteksi duplikasi.
 
@@ -86,6 +87,14 @@ Di [`app/services/pdf_service.py`](../app/services/pdf_service.py), sistem mener
 Jika LibreOffice tidak terpasang di server atau konversi mengalami kegagalan:
 * **Word (DOCX):** Diurai langsung oleh `python-docx` secara berurutan (*sequential AST*): paragraf, heading level 1-4, bullet list, run styling (bold, italic, monospace), dan tabel.
 * **PowerPoint (PPTX):** Diurai langsung oleh `python-pptx`: mengurutkan shapes berdasarkan posisi vertikal dan horizontal `(top, left)` untuk menjaga alur baca, mengekstrak tabel, dan bullet points bertingkat.
+
+#### C. Direct Structured Spreadsheet Parser (`.xlsx` & `.csv`)
+Di [`app/services/spreadsheet_service.py`](../app/services/spreadsheet_service.py), file Excel dan CSV **tidak dikonversi ke PDF** agar tabel lebar tidak terpotong ke samping dan tanpa membuat snapshot gambar MinIO:
+* **Excel (`.xlsx`) via `openpyxl` (`data_only=True`):** Membaca nilai hasil formula per sheet non-kosong, menerapkan *Smart Auto-Unmerge* (mengisi turun *vertical merge* namun menjaga banner judul tunggal tetap sebagai heading `##`), memisahkan beberapa blok tabel/teks bebas per sheet, dan memformat angka/tanggal secara rapi.
+* **CSV (`.csv`):** Mendeteksi encoding (`UTF-8-SIG`, `UTF-8`, `CP1252`, `Latin-1`) dan delimiter otomatis (`,`, `;` ekspor Excel lokal Indonesia, `\t`, `|`).
+* **Dual-Representation Embedding:**
+  * `content` disimpan sebagai **Tabel Markdown rapi** dengan pengulangan header kolom di setiap pecahan chunk (untuk tampilan Frontend & dibaca LLM Agent).
+  * `search_text` disimpan dalam format **Row-Semantic Key-Value** (`Baris N: Kolom1: Nilai1 | Kolom2: Nilai2`) sehingga `BAAI/bge-m3` dan *Cross-Encoder Reranker* mengaitkan setiap nilai sel langsung dengan nama kolomnya, dibatasi agar selalu muat dalam `CHUNK_SIZE`.
 
 ---
 

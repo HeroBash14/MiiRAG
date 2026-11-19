@@ -149,7 +149,11 @@ async def execute_similarity_query(payload: QueryRequest) -> QueryResponse:
     if payload.use_rerank and candidates:
         try:
             doc_inputs = [
-                f"[{c.contextual_header}]\n\n{c.content}" if c.contextual_header else c.content
+                (
+                    f"[{c.contextual_header}]\n\n{c.search_text or c.content}"
+                    if c.contextual_header
+                    else (c.search_text or c.content)
+                )
                 for c in candidates
             ]
             scores = await rerank_service.rerank(payload.query, doc_inputs)

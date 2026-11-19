@@ -11,7 +11,7 @@ from app.core.config import settings
 
 PDF_MAGIC_HEADER = b"%PDF-"
 ZIP_MAGIC_HEADER = b"PK\x03\x04"
-ALLOWED_EXTENSIONS = {".pdf", ".docx", ".pptx"}
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".pptx", ".xlsx", ".csv"}
 _SAFE_FILENAME_RE = re.compile(r"[^A-Za-z0-9._-]")
 
 
@@ -30,13 +30,16 @@ def _sanitize_filename(filename: str) -> str:
 
 
 async def save_uploaded_document(knowledge_id: uuid.UUID, upload: UploadFile) -> StoredFile:
-    """Validasi file dokumen (PDF, DOCX, atau PPTX) lalu simpan ke storage lokal."""
+    """Validasi file dokumen (PDF, DOCX, PPTX, XLSX, atau CSV) lalu simpan ke storage lokal."""
     raw_name = upload.filename or "document"
     ext = Path(raw_name).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File '{raw_name}' tidak didukung. Format yang didukung: PDF (.pdf), Word (.docx), dan PowerPoint (.pptx).",
+            detail=(
+                f"File '{raw_name}' tidak didukung. Format yang didukung: "
+                "PDF (.pdf), Word (.docx), PowerPoint (.pptx), Excel (.xlsx), dan CSV (.csv)."
+            ),
         )
 
     content = await upload.read()
@@ -71,6 +74,33 @@ async def save_uploaded_document(knowledge_id: uuid.UUID, upload: UploadFile) ->
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File '{raw_name}' bukan dokumen PowerPoint (.pptx) yang valid.",
         )
+
+    if ext == ".xlsx" and not content.startswith(ZIP_MAGIC_HEADER):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File '{raw_name}' bukan dokumen Excel (.xlsx) yang valid.",
+        )
+
+    if ext == ".csv":
+        head = content[:8192]
+        if b"\x00" in head or content.startswith((PDF_MAGIC_HEADER, ZIP_MAGIC_HEADER)):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File '{raw_name}' bukan dokumen CSV teks yang valid.",
+            )
+        decoded_ok = False
+        for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
+            try:
+                if content.decode(enc).strip():
+                    decoded_ok = True
+                break
+            except UnicodeDecodeError:
+                continue
+        if not decoded_ok:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File '{raw_name}' kosong atau bukan dokumen CSV yang valid.",
+            )
 
     file_hash = hashlib.sha256(content).hexdigest()
     safe_name = _sanitize_filename(raw_name)

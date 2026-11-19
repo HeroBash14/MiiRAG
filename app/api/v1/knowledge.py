@@ -84,7 +84,10 @@ async def create_knowledge(
     process_now: Annotated[
         bool, Form(description="true untuk langsung embed, false untuk simpan sebagai draft")
     ] = True,
-    files: Annotated[list[UploadFile] | None, File(description="Daftar file PDF, DOCX, atau PPTX")] = None,
+    files: Annotated[
+        list[UploadFile] | None,
+        File(description="Daftar file PDF, DOCX, PPTX, XLSX, atau CSV"),
+    ] = None,
 ) -> KnowledgeDetailResponse:
     return await knowledge_service.create_knowledge(
         session=session,

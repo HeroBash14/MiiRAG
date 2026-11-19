@@ -103,6 +103,11 @@ async def _embed_single_document(doc_id: uuid.UUID, knowledge_id: uuid.UUID) -> 
                         "contextual_header": chunk.build_contextual_header(filename),
                         "page_image_object": page_image_objects.get(chunk.page_number),
                         "page_image_url": page_image_objects.get(chunk.page_number),
+                        **(
+                            {"search_text": chunk.search_text}
+                            if chunk.search_text
+                            else {}
+                        ),
                     },
                     embedding=vector,
                 )

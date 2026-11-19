@@ -84,6 +84,7 @@ class SimilarChunkRow:
     page_image_url: str | None = None
     section_title: str | None = None
     contextual_header: str | None = None
+    search_text: str | None = None
     keyword_score: float = 0.0
     rrf_score: float = 0.0
     rerank_score: float | None = None
@@ -193,6 +194,7 @@ async def search_hybrid_chunks(
                 dc.content AS content,
                 dc.metadata_json ->> 'section_title' AS section_title,
                 dc.metadata_json ->> 'contextual_header' AS contextual_header,
+                dc.metadata_json ->> 'search_text' AS search_text,
                 COALESCE(
                     dc.metadata_json ->> 'page_image_object',
                     dc.metadata_json ->> 'page_image_url'
@@ -230,6 +232,7 @@ async def search_hybrid_chunks(
                 dc.content AS content,
                 dc.metadata_json ->> 'section_title' AS section_title,
                 dc.metadata_json ->> 'contextual_header' AS contextual_header,
+                dc.metadata_json ->> 'search_text' AS search_text,
                 COALESCE(
                     dc.metadata_json ->> 'page_image_object',
                     dc.metadata_json ->> 'page_image_url'
@@ -320,6 +323,7 @@ async def search_hybrid_chunks(
                 dc.content AS content,
                 dc.metadata_json ->> 'section_title' AS section_title,
                 dc.metadata_json ->> 'contextual_header' AS contextual_header,
+                dc.metadata_json ->> 'search_text' AS search_text,
                 COALESCE(
                     dc.metadata_json ->> 'page_image_object',
                     dc.metadata_json ->> 'page_image_url'
@@ -359,6 +363,7 @@ async def search_hybrid_chunks(
             page_image_url=row["page_image_url"],
             section_title=row["section_title"],
             contextual_header=row["contextual_header"],
+            search_text=row["search_text"],
             keyword_score=round(float(row["keyword_score"]), 6),
             rrf_score=round(float(row["rrf_score"]), 6),
         )

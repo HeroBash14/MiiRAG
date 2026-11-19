@@ -1,6 +1,6 @@
 # MiiRAG (Multi-format Intelligent Ingestion RAG)
 
-Platform RAG performa tinggi untuk dokumen multi-format (**PDF**, **Word .docx**, dan **PowerPoint .pptx**) menggunakan **FastAPI**, **Hybrid Markdown Decoder**, embedding lokal **`BAAI/bge-m3` (1024 Dimensi)**, **PostgreSQL + `pgvector`**, dan **MinIO Object Storage** untuk visual grounding.
+Platform RAG performa tinggi untuk dokumen multi-format (**PDF**, **Word `.docx`**, **PowerPoint `.pptx`**, **Excel `.xlsx`**, dan **CSV `.csv`**) menggunakan **FastAPI**, **Hybrid Markdown Decoder**, **Dual-Representation Spreadsheet Parser**, embedding lokal **`BAAI/bge-m3` (1024 Dimensi)**, **PostgreSQL + `pgvector`**, dan **MinIO Object Storage** untuk visual grounding.
 
 ---
 
@@ -16,8 +16,8 @@ Dokumentasi arsitektur dan alur pipeline data yang mendalam beserta visualisasi 
 
 ## ✨ Fitur Utama
 
-- **Multi-Format Ingestion (PDF, DOCX, PPTX)**: Mendukung pengunggahan dokumen PDF, Microsoft Word (`.docx`), dan Microsoft PowerPoint (`.pptx`) dengan validasi integritas *magic header* asli.
-- **Page-Preserving Hybrid Markdown Decoder**: Menjaga struktur tabel (`|---|---|`), heading (`#`, `##`), daftar bullet/numbered, dan catatan presenter (*speaker notes*), dipetakan 1:1 ke nomor halaman/slide fisik.
+- **Multi-Format Ingestion (PDF, DOCX, PPTX, XLSX, CSV)**: Mendukung pengunggahan dokumen PDF, Microsoft Word (`.docx`), PowerPoint (`.pptx`), Excel (`.xlsx`), dan CSV (`.csv`) dengan validasi integritas *magic header* & deteksi file biner.
+- **Page-Preserving Hybrid Markdown & Spreadsheet Dual-Representation**: Menjaga struktur tabel (`|---|---|`), heading, daftar, *speaker notes* PPTX, serta auto-unmerge & *Row-Semantic Key-Value embedding* untuk Excel/CSV (bebas layout tanpa snapshot MinIO).
 - **Contextual Chunk Headers & Table-Aware Chunking**: Mencegah pemutusan tabel, mengulang header kolom pada setiap pecahan chunk tabel, serta menyematkan hierarki judul dokumen & bagian pada embedding dan indeks pencarian.
 - **Hybrid Retrieval + Cross-Encoder Reranking**: Menggabungkan **Dense Vector (`BAAI/bge-m3` HNSW)** dan **Sparse Full-Text (`PostgreSQL tsvector GIN`)** via **Reciprocal Rank Fusion (RRF)**, lalu disaring dengan **Multilingual Cross-Encoder Reranker (`mmarco-mMiniLMv2`)**.
 - **Query Enhancement & Context Expansion**: Mendukung **HyDE** (*Hypothetical Document Embeddings*), **Query Expansion** sinonim/singkatan, dan **Expand Context** (*neighboring chunk window*) secara opsional per request.

@@ -42,6 +42,7 @@ class PDFChunk:
     page_number: int
     content: str
     section_title: str | None = None
+    search_text: str | None = None
 
     def build_contextual_header(self, filename: str | None = None) -> str:
         """Membentuk header konteks hierarki (Contextual Chunk Header) untuk embedding & hybrid search."""
@@ -54,9 +55,10 @@ class PDFChunk:
         return " | ".join(parts)
 
     def to_embedding_text(self, filename: str | None = None) -> str:
-        """Menggabungkan contextual header dengan konten chunk untuk akurasi vector embedding."""
+        """Menggabungkan contextual header dengan representasi pencarian chunk untuk akurasi vector embedding."""
         header = self.build_contextual_header(filename)
-        return f"[{header}]\n\n{self.content}"
+        body = self.search_text if self.search_text else self.content
+        return f"[{header}]\n\n{body}"
 
 
 def _clean_text(raw: str) -> str:
@@ -647,9 +649,15 @@ def extract_document_pages_and_snapshots(
     file_path: str | Path,
     render_snapshots: bool = True,
 ) -> tuple[int, list[PDFPageText], dict[int, bytes]]:
-    """Ekstrak teks Markdown dan snapshot gambar halaman dari file PDF, Word (.docx), maupun PowerPoint (.pptx)."""
+    """Ekstrak teks Markdown dan snapshot gambar halaman dari file PDF, DOCX, PPTX, XLSX, atau CSV."""
     path = Path(file_path)
     ext = path.suffix.lower()
+
+    if ext in (".xlsx", ".csv"):
+        from app.services.spreadsheet_service import extract_spreadsheet_pages
+
+        count, pages = extract_spreadsheet_pages(path)
+        return count, pages, {}
 
     if ext == ".docx":
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -831,15 +839,22 @@ def extract_and_chunk_document_with_snapshots(
     file_path: str | Path,
     render_snapshots: bool = True,
 ) -> tuple[int, list[PDFChunk], dict[int, bytes]]:
-    """Pipeline lengkap ekstraksi teks & render snapshot gambar per halaman untuk PDF dan DOCX."""
+    """Pipeline lengkap ekstraksi teks & render snapshot gambar per halaman untuk PDF, DOCX, PPTX, XLSX, dan CSV."""
+    path = Path(file_path)
+    if path.suffix.lower() in (".xlsx", ".csv"):
+        from app.services.spreadsheet_service import extract_and_chunk_spreadsheet
+
+        sheet_count, chunks = extract_and_chunk_spreadsheet(path)
+        return sheet_count, chunks, {}
+
     page_count, pages, snapshots = extract_document_pages_and_snapshots(
         file_path, render_snapshots=render_snapshots
     )
     if not pages:
-        raise ValueError(f"Dokumen '{Path(file_path).name}' tidak memiliki teks yang dapat diekstrak.")
+        raise ValueError(f"Dokumen '{path.name}' tidak memiliki teks yang dapat diekstrak.")
     chunks = chunk_pdf_pages(pages)
     if not chunks:
-        raise ValueError(f"Tidak ada chunk teks yang dihasilkan dari dokumen '{Path(file_path).name}'.")
+        raise ValueError(f"Tidak ada chunk teks yang dihasilkan dari dokumen '{path.name}'.")
     return page_count, chunks, snapshots
 
 

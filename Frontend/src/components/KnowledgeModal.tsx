@@ -94,7 +94,13 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
     for (let i = 0; i < incoming.length; i++) {
       const file = incoming[i];
       const nameLower = file.name.toLowerCase();
-      if (nameLower.endsWith(".pdf") || nameLower.endsWith(".docx") || nameLower.endsWith(".pptx")) {
+      if (
+        nameLower.endsWith(".pdf") ||
+        nameLower.endsWith(".docx") ||
+        nameLower.endsWith(".pptx") ||
+        nameLower.endsWith(".xlsx") ||
+        nameLower.endsWith(".csv")
+      ) {
         // Prevent duplicate file names
         if (!newFiles.some((f) => f.name === file.name)) {
           added.push(file);
@@ -153,8 +159,8 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
 
   const subtitles: Record<ModalMode, string> = {
     create:
-      "Upload satu atau lebih dokumen PDF. Anda bisa menyimpannya sebagai draft dan memprosesnya nanti.",
-    draft: "Perbarui detail draft atau tambahkan/kurangi dokumen PDF.",
+      "Upload satu atau lebih dokumen (PDF, Word, PowerPoint, Excel, atau CSV). Anda bisa menyimpannya sebagai draft dan memprosesnya nanti.",
+    draft: "Perbarui detail draft atau tambahkan/kurangi dokumen.",
     renew: `Perubahan akan disimpan sebagai versi v${
       (knowledge?.current_version || 1) + 1
     }. Dokumen yang tidak berubah tidak di-embed ulang.`,
@@ -239,22 +245,22 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
             type="file"
             multiple
             hidden
-            accept=".pdf,.docx,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            accept=".pdf,.docx,.pptx,.xlsx,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
             onChange={(e) => {
               handleFileChange(e.target.files);
               e.target.value = "";
             }}
             disabled={isSubmitting}
           />
-          <b>Tarik file PDF, Word (.docx), atau PowerPoint (.pptx) ke sini</b> atau klik untuk memilih
+          <b>Tarik file PDF, Word, PowerPoint, Excel (.xlsx), atau CSV ke sini</b> atau klik untuk memilih
           <br />
-          <small>Mendukung format PDF (.pdf), Word (.docx), dan PowerPoint (.pptx)</small>
+          <small>Mendukung format PDF (.pdf), Word (.docx), PowerPoint (.pptx), Excel (.xlsx), dan CSV (.csv)</small>
         </label>
 
         <div className="ls">
           {keptExistingDocs.length === 0 && newFiles.length === 0 ? (
             <p className="sub" style={{ textAlign: "center", margin: "14px 0" }}>
-              Belum ada dokumen PDF, Word, atau PowerPoint dipilih.
+              Belum ada dokumen dipilih.
             </p>
           ) : (
             <>

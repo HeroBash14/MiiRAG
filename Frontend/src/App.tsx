@@ -255,7 +255,7 @@ export function App() {
       <main className="mn">
         <TopBar theme={theme} onToggleTheme={toggleTheme} />
 
-        <div className="wrap">
+        <div className={`wrap ${currentNav === "query" ? "wrap-full" : ""}`}>
           {currentNav === "knowledge" && (
             <>
               {viewMode === "list" ? (
