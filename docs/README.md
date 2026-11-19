@@ -40,12 +40,14 @@ Dokumentasi ini disusun untuk mempermudah developer, AI engineer, maupun DevOps 
 
 Seluruh diagram sistem telah diekspor dalam resolusi tinggi dan tersedia dalam dua format (PNG untuk pratinjau cepat, dan SVG untuk inspeksi vektor tanpa pecah):
 
-| Diagram | Pratinjau Gambar (PNG) | Sumber Vektor (SVG) |
+| Diagram / Tampilan | Pratinjau Gambar (PNG) | Sumber Vektor (SVG) |
 | :--- | :--- | :--- |
 | **System Architecture Overview** | [Lihat PNG](images/architecture_overview.png) | [Buka SVG](images/architecture_overview.svg) |
 | **Ingestion & Embedding Pipeline** | [Lihat PNG](images/embedding_pipeline_flow.png) | [Buka SVG](images/embedding_pipeline_flow.svg) |
 | **Query & Retrieval Lifecycle** | [Lihat PNG](images/query_retrieval_flow.png) | [Buka SVG](images/query_retrieval_flow.svg) |
-| **Knowledge Base Web UI** | [Lihat PNG](images/knowledge_ui_overview.png) | - |
+| **Knowledge Graph Explorer (Tab)** | [Lihat PNG](images/knowledge_graph_tab_dark.png) | - |
+| **Knowledge Base (Light Mode)** | [Lihat PNG](images/knowledge_ui_light.png) | - |
+| **Knowledge Base (Dark Mode)** | [Lihat PNG](images/knowledge_ui_dark.png) | - |
 
 ---
 

@@ -2,7 +2,26 @@
 
 Platform RAG performa tinggi untuk dokumen multi-format (**PDF**, **Word `.docx`**, **PowerPoint `.pptx`**, **Excel `.xlsx`**, dan **CSV `.csv`**) menggunakan **FastAPI**, **Hybrid Markdown Decoder**, **Dual-Representation Spreadsheet Parser**, embedding lokal **`BAAI/bge-m3` (1024 Dimensi)**, **PostgreSQL + `pgvector`**, dan **MinIO Object Storage** untuk visual grounding.
 
-![MiiRAG Knowledge Base Web UI](docs/images/knowledge_ui_overview.png)
+<p align="center">
+  <img src="docs/images/knowledge_graph_tab_dark.png" alt="MiiRAG Zero-LLM Knowledge Graph Explorer" width="100%">
+</p>
+
+---
+
+## 🖥️ Antarmuka Pengguna (Web UI)
+
+### 1. Zero-LLM Knowledge Graph Explorer
+Eksplorasi graf interaktif lintas dokumen dengan 4 mesin layout (*Force-Directed*, *Document Cluster*, *Radial Hub*, *Circular*), filter entitas/jembatan semantik `BAAI/bge-m3`, dan inspector kutipan teks:
+<p align="center">
+  <img src="docs/images/knowledge_graph_tab_dark.png" alt="MiiRAG Knowledge Graph Tab (Dark Mode)" width="100%">
+</p>
+
+### 2. Beranda Knowledge Base (Mode Terang & Gelap)
+Dukungan penuh tema terang dan gelap dengan antarmuka desktop lebar penuh (*full-width*):
+<p align="center">
+  <img src="docs/images/knowledge_ui_light.png" alt="MiiRAG Knowledge Base - Light Mode" width="49%">
+  <img src="docs/images/knowledge_ui_dark.png" alt="MiiRAG Knowledge Base - Dark Mode" width="49%">
+</p>
 
 ---
 
