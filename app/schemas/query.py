@@ -46,6 +46,10 @@ class QueryRequest(BaseModel):
         default=False,
         description="Sertakan konteks chunk tetangga (sebelum/sesudah) pada field expanded_content.",
     )
+    use_graph: bool = Field(
+        default=False,
+        description="Aktifkan Zero-LLM Knowledge Graph (BAAI/bge-m3) untuk menelusuri relasi lintas dokumen.",
+    )
 
 
 class QueryResultItem(BaseModel):
@@ -79,6 +83,18 @@ class QueryResultItem(BaseModel):
         default=None,
         description="Skor relevansi probabilistik dari Cross-Encoder Reranker (0.0 - 1.0).",
     )
+    via_graph: bool = Field(
+        default=False,
+        description="True jika potongan dokumen ini ditarik melalui jembatan relasi Knowledge Graph lintas dokumen.",
+    )
+    graph_reason: str | None = Field(
+        default=None,
+        description="Penjelasan jalur relasi Knowledge Graph yang menemukan potongan dokumen ini.",
+    )
+    related_entities: list[str] = Field(
+        default_factory=list,
+        description="Daftar entitas/konsep/kode pada Knowledge Graph yang terhubung dengan potongan dokumen ini.",
+    )
 
 
 class QueryResponse(BaseModel):
@@ -87,6 +103,8 @@ class QueryResponse(BaseModel):
     total_results: int
     search_mode: str = "hybrid"
     reranked: bool = False
+    graph_used: bool = False
+    graph_nodes_matched: list[str] = Field(default_factory=list)
     enhancement_used: str = "none"
     hyde_document: str | None = None
     results: list[QueryResultItem]

@@ -9,6 +9,7 @@ import {
   EyeIcon,
   FileTextIcon,
   ImageIcon,
+  NetworkIcon,
   SearchIcon,
   XIcon,
 } from "./Icons";
@@ -51,6 +52,7 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
   const [useHyde, setUseHyde] = useState(false);
   const [useQueryExpansion, setUseQueryExpansion] = useState(true);
   const [expandContext, setExpandContext] = useState(false);
+  const [useGraph, setUseGraph] = useState(true);
   const [isConfigOpen, setIsConfigOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QueryResponse | null>(null);
@@ -80,7 +82,13 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
 
   const doneKnowledges = knowledges.filter((k) => k.status === "done");
 
-  const activeTechniquesCount = [useRerank, useQueryExpansion, useHyde, expandContext].filter(Boolean).length;
+  const activeTechniquesCount = [
+    useRerank,
+    useQueryExpansion,
+    useGraph,
+    useHyde,
+    expandContext,
+  ].filter(Boolean).length;
 
   const selectedKnowledgeName =
     selectedKid === "all"
@@ -109,6 +117,7 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
         use_hyde: useHyde,
         use_query_expansion: useQueryExpansion,
         expand_context: expandContext,
+        use_graph: useGraph,
       });
       setResult(res);
       if (res.results.length === 0) {
@@ -128,6 +137,7 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
     setThreshold(0.35);
     setUseRerank(true);
     setUseQueryExpansion(true);
+    setUseGraph(true);
     setUseHyde(false);
     setExpandContext(false);
     onToast("Konfigurasi dikembalikan ke default");
@@ -252,6 +262,22 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
                         Reranked
                       </span>
                     )}
+                    {result.graph_used && (
+                      <span
+                        className="pill mono"
+                        style={{
+                          fontSize: "12.5px",
+                          background: "var(--prit)",
+                          color: "var(--prid)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        <NetworkIcon size={12} />
+                        <span>Knowledge Graph</span>
+                      </span>
+                    )}
                     {result.enhancement_used && result.enhancement_used !== "none" && (
                       <span className="pill mono" style={{ fontSize: "12.5px", background: "var(--blt)", color: "var(--bl)" }}>
                         {result.enhancement_used}
@@ -262,6 +288,22 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
                     </span>
                   </div>
                 </div>
+
+                {result.graph_nodes_matched && result.graph_nodes_matched.length > 0 && (
+                  <div className="kg-query-matched-bar">
+                    <span className="kg-query-matched-lbl">
+                      <NetworkIcon size={13} />
+                      <span>Entitas Graph Terdeteksi:</span>
+                    </span>
+                    <div className="kg-tag-list">
+                      {result.graph_nodes_matched.map((ent) => (
+                        <span key={ent} className="tag">
+                          {ent}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {result.hyde_document && (
                   <div
@@ -319,6 +361,23 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
                         </div>
 
                         <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                          {r.via_graph && (
+                            <span
+                              className="b mono"
+                              style={{
+                                background: "var(--prit)",
+                                color: "var(--prid)",
+                                fontWeight: 600,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "4px",
+                              }}
+                              title={r.graph_reason || "Ditemukan melalui relasi lintas dokumen Knowledge Graph"}
+                            >
+                              <NetworkIcon size={12} />
+                              <span>Via Graph</span>
+                            </span>
+                          )}
                           {typeof r.rerank_score === "number" && (
                             <span
                               className="b mono"
@@ -386,6 +445,13 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
                         </div>
                       </div>
 
+                      {r.via_graph && r.graph_reason && (
+                        <div className="kg-via-banner">
+                          <NetworkIcon size={13} />
+                          <span>{r.graph_reason}</span>
+                        </div>
+                      )}
+
                       {r.section_title && (
                         <div
                           className="sub"
@@ -401,6 +467,17 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
                       )}
 
                       <MarkdownContent content={r.expanded_content || r.content} />
+
+                      {r.related_entities && r.related_entities.length > 0 && (
+                        <div className="kg-chunk-entities">
+                          <span className="kg-chunk-entities-lbl">Entitas terkait:</span>
+                          {r.related_entities.map((ent) => (
+                            <span key={ent} className="tag">
+                              {ent}
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
                       {r.page_image_url && (
                         <div className="snapshot-bar">
@@ -608,6 +685,21 @@ export const QueryKnowledgeView: React.FC<QueryKnowledgeViewProps> = ({
                 <span>
                   <b>Query Expansion</b>
                   <small>Tambah variasi sinonim dan singkatan dari pertanyaan agar tidak ada yang terlewat.</small>
+                </span>
+              </label>
+
+              <label className="sw">
+                <input
+                  type="checkbox"
+                  id="kg"
+                  checked={useGraph}
+                  onChange={(e) => setUseGraph(e.target.checked)}
+                  disabled={loading}
+                />
+                <span className="tr"></span>
+                <span>
+                  <b>Knowledge Graph (Lintas Dokumen)</b>
+                  <small>Telusuri relasi entitas & jembatan makna BAAI/bge-m3 agar informasi terkait di dokumen lain ikut ditarik.</small>
                 </span>
               </label>
 

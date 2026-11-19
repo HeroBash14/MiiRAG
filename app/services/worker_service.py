@@ -17,6 +17,7 @@ from app.models.knowledge import (
     utc_now,
 )
 from app.services.embedding_service import embedding_service
+from app.services.graph_builder_service import build_knowledge_graph_for_version
 from app.services.minio_service import minio_service
 from app.services.pdf_service import extract_and_chunk_document_with_snapshots
 
@@ -169,6 +170,18 @@ async def process_knowledge_version(knowledge_id: uuid.UUID, version_id: uuid.UU
 
             all_embedded = bool(statuses) and all(s == DocumentStatus.EMBEDDED for s in statuses)
             if all_embedded:
+                if settings.KG_ENABLED:
+                    try:
+                        await build_knowledge_graph_for_version(
+                            knowledge_id=knowledge_id,
+                            version_id=version_id,
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Gagal membangun Zero-LLM Knowledge Graph untuk knowledge=%s version=%s",
+                            knowledge_id,
+                            version_id,
+                        )
                 version.status = KnowledgeStatus.DONE
                 knowledge.status = KnowledgeStatus.DONE
                 knowledge.active_version_id = version.id

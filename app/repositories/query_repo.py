@@ -88,6 +88,10 @@ class SimilarChunkRow:
     keyword_score: float = 0.0
     rrf_score: float = 0.0
     rerank_score: float | None = None
+    via_graph: bool = False
+    graph_reason: str | None = None
+    graph_score: float = 0.0
+    related_entities: tuple[str, ...] = ()
 
 
 def build_or_tsquery(query: str, max_tokens: int = 16) -> str | None:

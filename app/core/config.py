@@ -74,6 +74,16 @@ class Settings(BaseSettings):
     HYDE_BASE_URL: str = ""
     HYDE_TIMEOUT_SECONDS: float = 5.0
 
+    # Zero-LLM Knowledge Graph (Pure BAAI/bge-m3 + PostgreSQL pgvector)
+    KG_ENABLED: bool = True
+    KG_SEMANTIC_EDGE_THRESHOLD: float = 0.68
+    KG_ALIAS_MERGE_THRESHOLD: float = 0.86
+    KG_MAX_CONCEPT_NODES: int = 45
+    KG_MAX_SECTIONS_PER_DOC: int = 12
+    KG_MAX_SEMANTIC_BRIDGES_PER_NODE: int = 3
+    KG_MAX_COOCCUR_EDGES_PER_NODE: int = 4
+    KG_QUERY_MAX_EXPANDED_CHUNKS: int = 8
+
     @property
     def max_upload_size_bytes(self) -> int:
         return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024

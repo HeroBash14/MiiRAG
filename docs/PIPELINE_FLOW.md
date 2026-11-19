@@ -126,9 +126,15 @@ Di [`app/services/embedding_service.py`](../app/services/embedding_service.py):
      `documents/{knowledge_id}/{doc_id}/page_{page_number}.png`
 2. **PostgreSQL pgvector:**
    * Seluruh chunk teks beserta nilai embedding-nya dimasukkan ke tabel `document_chunks`.
-3. **Pembaruan Status:**
+3. **Zero-LLM Knowledge Graph (`BAAI/bge-m3`):**
+   * Begitu seluruh dokumen dalam suatu versi selesai di-embed, [`graph_builder_service.py`](../app/services/graph_builder_service.py) otomatis membangun graf lintas dokumen tanpa LLM (100% lokal) ke tabel `kg_nodes` & `kg_edges`:
+     * **Hierarki Dokumen & Bagian/Sheet** (*spreadsheet anti-explosion* per sheet).
+     * **Ekstraksi Kode/Referensi (`SOP-xxx`, `Pasal X`, mention file)** dan **Konsep Lintas Dokumen**.
+     * **Semantic Alias Merging (`BAAI/bge-m3`)**: menggabungkan variasi istilah bermakna sama (mis. `Head Barista` ↔ `Kepala Barista`, cosine ≥ `0.86`).
+     * **Cross-Document Semantic Bridges (`BAAI/bge-m3`)**: matriks kemiripan vektor antar chunk dari dokumen berbeda (cosine ≥ `0.68`) untuk memetakan relasi semantik lintas file.
+4. **Pembaruan Status:**
    * Dokumen diubah statusnya menjadi `embedded`.
-   * Status Knowledge diperbarui menjadi `done`.
+   * Status Knowledge diperbarui menjadi `done` (serta otomatis di-rebuild ulang saat `Re-new` versi baru).
 
 ---
 
@@ -138,17 +144,18 @@ Di [`app/services/embedding_service.py`](../app/services/embedding_service.py):
 
 > **Format Vektor:** Gambar diagram alur query di atas juga tersedia dalam format SVG di [`docs/images/query_retrieval_flow.svg`](images/query_retrieval_flow.svg).
 >
-> 📖 **Dokumentasi Mendalam:** Penjelasan detail mengenai 3 mode retrieval (`hybrid`, `dense`, `keyword`), rumus RRF, *Cross-Encoder Reranking*, *Query Expansion*, *HyDE*, *Expand Context*, dan hasil benchmark tersedia di [**`RETRIEVAL_METHODS.md`**](RETRIEVAL_METHODS.md).
+> 📖 **Dokumentasi Mendalam:** Penjelasan detail mengenai 3 mode retrieval (`hybrid`, `dense`, `keyword`), rumus RRF, *Cross-Encoder Reranking*, *Query Expansion*, *HyDE*, *Expand Context*, *Zero-LLM Knowledge Graph*, dan hasil benchmark tersedia di [**`RETRIEVAL_METHODS.md`**](RETRIEVAL_METHODS.md) dan [**`RETRIEVAL_USER_GUIDE.md`**](RETRIEVAL_USER_GUIDE.md).
 
 ### Ringkasan Langkah Pemrosesan Query (`POST /api/v1/query`):
-1. **Penerimaan Query & Konfigurasi Mode:** Client atau UI mengirimkan query beserta mode (`hybrid` default, `dense`, atau `keyword`) serta toggle opsional (`use_rerank`, `use_query_expansion`, `use_hyde`, `expand_context`).
+1. **Penerimaan Query & Konfigurasi Mode:** Client atau UI mengirimkan query beserta mode (`hybrid` default, `dense`, atau `keyword`) serta toggle opsional (`use_rerank`, `use_query_expansion`, `use_graph`, `use_hyde`, `expand_context`).
 2. **Query Enhancement & Vectorization:**
    * Jika `use_hyde=true`, pertanyaan ditransformasikan menjadi paragraf hipotetis lalu di-blend secara L2 (`0.35 * query + 0.65 * hyde`).
    * Untuk mode `hybrid` / `dense`, query diubah menjadi vektor 1024 dimensi oleh `BAAI/bge-m3`.
    * Untuk cabang FTS (`hybrid` / `keyword`), stopword ringan disaring menjadi `OR-tsquery` (diperkaya sinonim jika `use_query_expansion=true`).
-3. **Hybrid Retrieval di PostgreSQL:**
+3. **Hybrid Retrieval + Zero-LLM Graph Expansion di PostgreSQL:**
    * Menjalankan pencarian paralel **Dense Vector (`pgvector` HNSW)** + **Sparse Full-Text (`GIN tsvector`)** lalu menggabungkannya dengan **Reciprocal Rank Fusion (RRF)**.
+   * Jika `use_graph=true`, sistem menelusuri **1-hop Knowledge Graph** (mencocokkan vektor query ke `kg_nodes` + melompat melalui entitas hub lintas dokumen & `semantic_bridge` `BAAI/bge-m3`) untuk menarik chunk terkait dari dokumen lain (< 30 ms, tanpa LLM) beserta provenance `via_graph` dan `graph_reason`.
 4. **Cross-Encoder Reranking & Context Expansion:**
-   * Jika `use_rerank=true`, Top-20 kandidat dinilai ulang oleh `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` (menggunakan `contextual_header + content`).
+   * Jika `use_rerank=true`, seluruh kandidat (hasil Hybrid + hasil ekspansi Knowledge Graph) dinilai ulang oleh `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` (menggunakan `contextual_header + content`).
    * Jika `expand_context=true`, chunk tetangga (`chunk_index ± 1`) digabungkan ke field `expanded_content`.
-5. **Penandatanganan URL Snapshot & Pengiriman Hasil:** MinIO menghasilkan **Presigned URL** (30 menit) untuk visual grounding, lalu hasil JSON lengkap (`content` Markdown, `section_title`, skor, dan `page_image_url`) dikembalikan ke client atau AI Agent.
+5. **Penandatanganan URL Snapshot & Pengiriman Hasil:** MinIO menghasilkan **Presigned URL** (30 menit) untuk visual grounding, lalu hasil JSON lengkap (`content` Markdown, `section_title`, skor, `via_graph`, `graph_reason`, `related_entities`, dan `page_image_url`) dikembalikan ke client atau AI Agent.

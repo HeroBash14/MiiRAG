@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { DocumentStatus, KnowledgeDetailResponse, QueryResponse } from "../types";
 import { formatBytes, formatDate } from "../utils";
 import { executeQuery } from "../api";
-import { CheckIcon } from "./Icons";
+import { CheckIcon, NetworkIcon, SearchIcon } from "./Icons";
 import { MarkdownContent } from "./MarkdownContent";
+import { KnowledgeGraphView } from "./KnowledgeGraphView";
 
 interface KnowledgeDetailProps {
   knowledge: KnowledgeDetailResponse;
@@ -13,6 +14,7 @@ interface KnowledgeDetailProps {
   onStartProcess: () => void;
   onDelete: () => void;
   onToast: (msg: string) => void;
+  onFullWidthChange?: (isFull: boolean) => void;
 }
 
 const docStatusBadge = (s: DocumentStatus, kStatus: string) => {
@@ -64,8 +66,16 @@ export const KnowledgeDetail: React.FC<KnowledgeDetailProps> = ({
   onStartProcess,
   onDelete,
   onToast,
+  onFullWidthChange,
 }) => {
-  const [activeTab, setActiveTab] = useState<"docs" | "hist" | "query">("docs");
+  const [activeTab, setActiveTab] = useState<"docs" | "graph" | "hist" | "query">("docs");
+
+  useEffect(() => {
+    onFullWidthChange?.(activeTab === "graph");
+    return () => {
+      onFullWidthChange?.(false);
+    };
+  }, [activeTab, onFullWidthChange]);
 
   // Query search state
   const [queryText, setQueryText] = useState("");
@@ -94,6 +104,7 @@ export const KnowledgeDetail: React.FC<KnowledgeDetailProps> = ({
         knowledge_ids: [knowledge.id],
         top_k: 5,
         score_threshold: 0.3,
+        use_graph: true,
       });
       setQueryResult(res);
       if (res.results.length === 0) {
@@ -202,6 +213,15 @@ export const KnowledgeDetail: React.FC<KnowledgeDetailProps> = ({
           </button>
           <button
             type="button"
+            className={`tab ${activeTab === "graph" ? "on" : ""}`}
+            onClick={() => setActiveTab("graph")}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+          >
+            <NetworkIcon size={14} />
+            <span>Knowledge Graph</span>
+          </button>
+          <button
+            type="button"
             className={`tab ${activeTab === "hist" ? "on" : ""}`}
             onClick={() => setActiveTab("hist")}
           >
@@ -211,10 +231,20 @@ export const KnowledgeDetail: React.FC<KnowledgeDetailProps> = ({
             type="button"
             className={`tab ${activeTab === "query" ? "on" : ""}`}
             onClick={() => setActiveTab("query")}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            🔍 Uji Similarity Search
+            <SearchIcon size={14} />
+            <span>Uji Similarity Search</span>
           </button>
         </div>
+
+        {activeTab === "graph" && (
+          <KnowledgeGraphView
+            knowledgeId={knowledge.id}
+            knowledgeStatus={knowledge.status}
+            onToast={onToast}
+          />
+        )}
 
         {activeTab === "docs" && (
           <div>

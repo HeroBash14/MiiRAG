@@ -107,13 +107,13 @@ async def clean_db() -> AsyncGenerator[None, None]:
     """Membersihkan seluruh tabel database test (miirag_test) sebelum dan sesudah test integrasi."""
     async with AsyncSessionLocal() as session:
         await session.execute(
-            text("TRUNCATE TABLE document_chunks, knowledge_version_documents, documents, knowledge_versions, knowledges RESTART IDENTITY CASCADE")
+            text("TRUNCATE TABLE kg_edges, kg_nodes, document_chunks, knowledge_version_documents, documents, knowledge_versions, knowledges RESTART IDENTITY CASCADE")
         )
         await session.commit()
     yield
     async with AsyncSessionLocal() as session:
         await session.execute(
-            text("TRUNCATE TABLE document_chunks, knowledge_version_documents, documents, knowledge_versions, knowledges RESTART IDENTITY CASCADE")
+            text("TRUNCATE TABLE kg_edges, kg_nodes, document_chunks, knowledge_version_documents, documents, knowledge_versions, knowledges RESTART IDENTITY CASCADE")
         )
         await session.commit()
     await engine.dispose()

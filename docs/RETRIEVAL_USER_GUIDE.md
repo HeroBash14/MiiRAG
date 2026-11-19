@@ -103,6 +103,17 @@ Di bawah kolom pencarian terdapat 4 kotak centang (*checkbox*). Berikut efek nya
 
 ---
 
+### ☑️ 5. `Knowledge Graph (Lintas Dokumen)` *(Zero-LLM berbasis BAAI/bge-m3)*
+* **Cara kerja sederhana:** Saat sebuah Knowledge berisi beberapa dokumen (misalnya SOP, Checklist, Struktur Organisasi, dan Excel), sistem secara otomatis memetakan **entitas penghubung bersama** (seperti `Head Barista`, `SOP-CHIL-09`, `Mesin Espresso`) serta **jembatan kemiripan makna (`BAAI/bge-m3`)** antar file berbeda tanpa LLM. Saat diaktifkan, pencarian tidak berhenti di 1 dokumen saja, melainkan ikut melompat 1-hop ke dokumen terkait lainnya lalu memverifikasinya dengan Cross-Encoder Reranker.
+* **Efek jika DICENTANG *(Disarankan)*:**
+  * Jawaban lintas dokumen (*multi-hop*) seperti *"Siapa penanggung jawab prosedur X dan bagaimana checklist-nya?"* ikut ditemukan meskipun tidak semua kata kuncinya ada di satu file.
+  * Memunculkan badge hijau **`Via Graph`** beserta alasan jalur keterhubungannya dan tag **`Entitas terkait`** di setiap kartu hasil.
+  * *Efek ke kecepatan:* Sangat cepat (~**+0,02 detik** di PostgreSQL, 100% lokal tanpa biaya token LLM).
+* **Efek jika TIDAK dicentang:**
+  * Pencarian hanya mengandalkan kemiripan langsung antara teks pertanyaan dan masing-masing potongan dokumen secara terpisah.
+
+---
+
 ## 3. Cara Membaca Angka & Label di Hasil Pencarian
 
 Saat hasil muncul, Anda akan melihat beberapa label kecil berwarna di kanan atas setiap kartu hasil:
@@ -114,9 +125,11 @@ Saat hasil muncul, Anda akan melihat beberapa label kecil berwarna di kanan atas
    * Menunjukkan tingkat kedekatan makna (*semantic similarity*) antara pertanyaan dan potongan dokumen.
 3. **`FTS 0.XX` (Label Kuning):**
    * Muncul jika ada kata kunci atau kode yang cocok secara persis di dalam potongan teks tersebut.
-4. **`Bagian: ...` (Teks Hijau di atas konten):**
+4. **`Via Graph` (Label Hijau + Banner Jalur Relasi):**
+   * Muncul jika potongan dokumen tersebut berhasil diselamatkan melalui jembatan relasi **Zero-LLM Knowledge Graph** lintas file (misalnya terhubung lewat konsep bersama atau jembatan semantik `BAAI/bge-m3`).
+5. **`Bagian: ...` (Teks Hijau di atas konten):**
    * Menunjukkan judul bab/sub-judul tempat potongan teks itu berada (misal: `Bagian: SOP Cafe > 2. Kode Alat & Sanitasi`), sehingga Anda langsung tahu konteksnya walaupun isi potongannya hanya berupa tabel atau daftar poin.
-5. **`Score Threshold (KKM)`:**
+6. **`Score Threshold (KKM)`:**
    * Angka batas minimal kelulusan hasil (default `0.35` atau `35%`).
    * Jika hasil pencarian kosong, coba turunkan angka KKM ke `0.20` atau `0.15`. Sebaliknya, jika hasil terlalu banyak yang kurang nyambung, naikkan ke `0.50`.
 
@@ -124,10 +137,10 @@ Saat hasil muncul, Anda akan melihat beberapa label kecil berwarna di kanan atas
 
 ## 4. Rekomendasi Paket Setting ("Tinggal Pilih Sesuai Kebutuhan")
 
-| Kebutuhan Anda | Mode Retrieval | Reranker | Query Expansion | HyDE | Expand Context |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **Sehari-hari (Paling Aman & Akurat)** | `Hybrid` | ☑️ Aktif | ☑️ Aktif | ⬜ Mati | ⬜ Mati |
-| **Cari Kode Alat / Nomor Surat / Nama Persis** | `Keyword Only` | ⬜ Mati | ⬜ Mati | ⬜ Mati | ⬜ Mati |
-| **Pertanyaan Panjang / Lupa Istilah Dokumen** | `Hybrid` | ☑️ Aktif | ☑️ Aktif | ☑️ Aktif | ⬜ Mati |
-| **Baca Prosedur Lengkap Sebelum & Sesudah** | `Hybrid` | ☑️ Aktif | ☑️ Aktif | ⬜ Mati | ☑️ Aktif |
-| **Kecepatan Maksimal (Server Tanpa GPU)** | `Hybrid` | ⬜ Mati | ☑️ Aktif | ⬜ Mati | ⬜ Mati |
+| Kebutuhan Anda | Mode Retrieval | Reranker | Query Expansion | Knowledge Graph | HyDE | Expand Context |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Sehari-hari & Lintas Dokumen (Rekomendasi)** | `Hybrid` | ☑️ Aktif | ☑️ Aktif | ☑️ Aktif | ⬜ Mati | ⬜ Mati |
+| **Cari Kode Alat / Nomor Surat / Nama Persis** | `Keyword Only` | ⬜ Mati | ⬜ Mati | ⬜ Mati | ⬜ Mati | ⬜ Mati |
+| **Pertanyaan Panjang / Lupa Istilah Dokumen** | `Hybrid` | ☑️ Aktif | ☑️ Aktif | ☑️ Aktif | ☑️ Aktif | ⬜ Mati |
+| **Baca Prosedur Lengkap Sebelum & Sesudah** | `Hybrid` | ☑️ Aktif | ☑️ Aktif | ☑️ Aktif | ⬜ Mati | ☑️ Aktif |
+| **Kecepatan Maksimal (Server Tanpa GPU)** | `Hybrid` | ⬜ Mati | ☑️ Aktif | ☑️ Aktif | ⬜ Mati | ⬜ Mati |

@@ -40,19 +40,39 @@ class CrossEncoderRerankService:
                 logger.warning("CUDA tidak tersedia untuk reranker, fallback ke CPU.")
                 device = "cpu"
             elif device == "cuda":
-                model_kwargs["dtype"] = torch.float16
+                free_vram_mb = torch.cuda.mem_get_info()[0] // (1024 * 1024)
+                if free_vram_mb < 512:
+                    logger.warning(
+                        "VRAM CUDA bebas (%d MB) terbatas untuk reranker, fallback ke CPU.",
+                        free_vram_mb,
+                    )
+                    device = "cpu"
+                else:
+                    model_kwargs["dtype"] = torch.float16
 
             logger.info(
                 "Memuat model reranker '%s' pada device '%s'...",
                 settings.RERANK_MODEL,
                 device,
             )
-            self._model = CrossEncoder(
-                settings.RERANK_MODEL,
-                device=device,
-                max_length=512,
-                model_kwargs=model_kwargs if model_kwargs else None,
-            )
+            try:
+                self._model = CrossEncoder(
+                    settings.RERANK_MODEL,
+                    device=device,
+                    max_length=512,
+                    model_kwargs=model_kwargs if model_kwargs else None,
+                )
+            except RuntimeError as exc:
+                if device == "cuda" and "out of memory" in str(exc).lower():
+                    logger.warning("CUDA out of memory saat memuat reranker, beralih ke CPU.")
+                    torch.cuda.empty_cache()
+                    self._model = CrossEncoder(
+                        settings.RERANK_MODEL,
+                        device="cpu",
+                        max_length=512,
+                    )
+                else:
+                    raise
             logger.info("Model reranker '%s' berhasil dimuat.", settings.RERANK_MODEL)
             return self._model
 

@@ -1,9 +1,11 @@
+import logging
 import uuid
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import case, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.models.knowledge import (
     Document,
     DocumentStatus,
@@ -21,6 +23,7 @@ from app.schemas.knowledge import (
     KnowledgeStatusCounts,
     KnowledgeVersionOut,
 )
+from app.services.graph_builder_service import build_knowledge_graph_for_version
 from app.services.minio_service import minio_service
 from app.services.storage_service import (
     delete_knowledge_storage,
@@ -28,6 +31,8 @@ from app.services.storage_service import (
     save_uploaded_pdf,
 )
 from app.services.worker_service import enqueue_version_embedding
+
+logger = logging.getLogger(__name__)
 
 
 async def _get_knowledge_or_404(session: AsyncSession, knowledge_id: uuid.UUID) -> Knowledge:
@@ -453,6 +458,15 @@ async def renew_knowledge(
 
     if needs_embedding:
         enqueue_version_embedding(knowledge.id, new_version.id)
+    elif settings.KG_ENABLED:
+        try:
+            await build_knowledge_graph_for_version(knowledge.id, new_version.id)
+        except Exception:
+            logger.exception(
+                "Gagal memperbarui Knowledge Graph saat re-new knowledge=%s version=%s",
+                knowledge.id,
+                new_version.id,
+            )
 
     return await _build_detail_response(session, knowledge)
 

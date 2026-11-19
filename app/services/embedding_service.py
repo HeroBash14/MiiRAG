@@ -37,18 +37,39 @@ class LocalSentenceTransformerEmbeddingService:
                 )
                 device = "cpu"
             elif device == "cuda":
+                free_vram_mb = torch.cuda.mem_get_info()[0] // (1024 * 1024)
+                total_vram_mb = torch.cuda.get_device_properties(0).total_memory // (1024 * 1024)
                 logger.info(
-                    "CUDA terdeteksi: %s (%d MB VRAM)",
+                    "CUDA terdeteksi: %s (%d MB free / %d MB total VRAM)",
                     torch.cuda.get_device_name(0),
-                    torch.cuda.get_device_properties(0).total_memory // (1024 * 1024),
+                    free_vram_mb,
+                    total_vram_mb,
                 )
+                if free_vram_mb < 1600:
+                    logger.warning(
+                        "VRAM CUDA bebas (%d MB) tidak mencukupi untuk '%s', fallback ke CPU.",
+                        free_vram_mb,
+                        settings.EMBEDDING_MODEL,
+                    )
+                    device = "cpu"
 
             logger.info(
                 "Memuat model embedding lokal '%s' pada device '%s'...",
                 settings.EMBEDDING_MODEL,
                 device,
             )
-            self._model = SentenceTransformer(settings.EMBEDDING_MODEL, device=device)
+            try:
+                self._model = SentenceTransformer(settings.EMBEDDING_MODEL, device=device)
+            except RuntimeError as exc:
+                if device == "cuda" and "out of memory" in str(exc).lower():
+                    logger.warning(
+                        "CUDA out of memory saat memuat '%s', beralih ke CPU.",
+                        settings.EMBEDDING_MODEL,
+                    )
+                    torch.cuda.empty_cache()
+                    self._model = SentenceTransformer(settings.EMBEDDING_MODEL, device="cpu")
+                else:
+                    raise
             logger.info("Model '%s' berhasil dimuat ke memori.", settings.EMBEDDING_MODEL)
         return self._model
 
@@ -78,6 +99,12 @@ class LocalSentenceTransformerEmbeddingService:
         """Mengubah query pencarian menjadi vector 1024 dimensi."""
         vectors = await asyncio.to_thread(self._embed_sync, [query])
         return vectors[0]
+
+    async def embed_texts(self, texts: list[str]) -> list[list[float]]:
+        """Mengubah daftar istilah/konsep Knowledge Graph menjadi vector 1024 dimensi secara batch."""
+        if not texts:
+            return []
+        return await asyncio.to_thread(self._embed_sync, texts)
 
 
 class VertexEmbeddingService:
@@ -136,6 +163,13 @@ class VertexEmbeddingService:
             self._embed_sync, [query], "RETRIEVAL_QUERY", None
         )
         return vectors[0]
+
+    async def embed_texts(self, texts: list[str]) -> list[list[float]]:
+        if not texts:
+            return []
+        return await asyncio.to_thread(
+            self._embed_sync, texts, "SEMANTIC_SIMILARITY", None
+        )
 
 
 # Pilih service berdasarkan konfigurasi settings.EMBEDDING_PROVIDER

@@ -1,5 +1,7 @@
 import type {
+  GraphNodeDetailResponse,
   KnowledgeDetailResponse,
+  KnowledgeGraphResponse,
   KnowledgeListResponse,
   QueryRequest,
   QueryResponse,
@@ -110,4 +112,46 @@ export async function executeQuery(
     body: JSON.stringify(payload),
   });
   return handleResponse<QueryResponse>(res);
+}
+
+export async function fetchKnowledgeGraph(
+  knowledgeId: string,
+  options?: {
+    versionId?: string;
+    includeSections?: boolean;
+    nodeTypes?: string[];
+    minWeight?: number;
+  }
+): Promise<KnowledgeGraphResponse> {
+  const params = new URLSearchParams();
+  if (options?.versionId) params.set("version_id", options.versionId);
+  if (options?.includeSections === false) params.set("include_sections", "false");
+  if (options?.nodeTypes && options.nodeTypes.length > 0) {
+    params.set("node_types", options.nodeTypes.join(","));
+  }
+  if (typeof options?.minWeight === "number" && options.minWeight > 0) {
+    params.set("min_weight", String(options.minWeight));
+  }
+  const qs = params.toString();
+  const res = await fetch(`${BASE_URL}/knowledges/${knowledgeId}/graph${qs ? `?${qs}` : ""}`);
+  return handleResponse<KnowledgeGraphResponse>(res);
+}
+
+export async function rebuildKnowledgeGraph(
+  knowledgeId: string,
+  versionId?: string
+): Promise<KnowledgeGraphResponse> {
+  const qs = versionId ? `?version_id=${encodeURIComponent(versionId)}` : "";
+  const res = await fetch(`${BASE_URL}/knowledges/${knowledgeId}/graph/rebuild${qs}`, {
+    method: "POST",
+  });
+  return handleResponse<KnowledgeGraphResponse>(res);
+}
+
+export async function fetchGraphNodeDetail(
+  knowledgeId: string,
+  nodeId: string
+): Promise<GraphNodeDetailResponse> {
+  const res = await fetch(`${BASE_URL}/knowledges/${knowledgeId}/graph/nodes/${nodeId}`);
+  return handleResponse<GraphNodeDetailResponse>(res);
 }

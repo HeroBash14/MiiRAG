@@ -45,6 +45,7 @@ export function App() {
 
   // Detail data
   const [detail, setDetail] = useState<KnowledgeDetailResponse | null>(null);
+  const [detailFullWidth, setDetailFullWidth] = useState(false);
 
   // Modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -255,7 +256,13 @@ export function App() {
       <main className="mn">
         <TopBar theme={theme} onToggleTheme={toggleTheme} />
 
-        <div className={`wrap ${currentNav === "query" ? "wrap-full" : ""}`}>
+        <div
+          className={`wrap ${
+            currentNav === "query" || (currentNav === "knowledge" && viewMode === "detail" && detailFullWidth)
+              ? "wrap-full"
+              : ""
+          }`}
+        >
           {currentNav === "knowledge" && (
             <>
               {viewMode === "list" ? (
@@ -288,6 +295,7 @@ export function App() {
                     onStartProcess={handleStartProcess}
                     onDelete={handleDeleteKnowledge}
                     onToast={showToast}
+                    onFullWidthChange={setDetailFullWidth}
                   />
                 )
               )}
