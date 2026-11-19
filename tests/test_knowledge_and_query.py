@@ -323,7 +323,11 @@ async def test_query_returns_markdown_table_and_valid_snapshot_url(
     monkeypatch.setattr(embedding_service, "embed_documents", fake_embed_documents)
     monkeypatch.setattr(embedding_service, "embed_query", fake_embed_query)
 
-    pdf_file = next(Path("storage/uploads").glob("*/*SOP_Cafe.pdf"))
+    matches = list(Path("storage/uploads").glob("*/*SOP_Cafe.pdf"))
+    if matches:
+        pdf_file = matches[0]
+    else:
+        pdf_file = Path("/home/remibook/Downloads/TESTING RAG/Cafe Document/SOP_Cafe.pdf")
     pdf_bytes = pdf_file.read_bytes()
 
     resp = await client.post(

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { DocumentItem, KnowledgeDetailResponse } from "../types";
 import { formatBytes } from "../utils";
 
@@ -28,8 +28,6 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
   onSubmitDraft,
   onSubmitRenew,
 }) => {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [note, setNote] = useState("");
@@ -53,40 +51,8 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
         setKeptExistingDocs([...knowledge.documents]);
         setNewFiles([]);
       }
-
-      const dialog = dialogRef.current;
-      if (dialog && !dialog.open) {
-        dialog.showModal();
-      }
-    } else {
-      const dialog = dialogRef.current;
-      if (dialog && dialog.open) {
-        dialog.close();
-      }
     }
   }, [isOpen, mode, knowledge]);
-
-  // Fallback for light-dismiss on browsers without closedBy support (Modern Web Guidance)
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    const handlePointerDown = (e: MouseEvent) => {
-      if (e.target !== dialog) return;
-      const rect = dialog.getBoundingClientRect();
-      const isOutside =
-        e.clientX < rect.left ||
-        e.clientX > rect.right ||
-        e.clientY < rect.top ||
-        e.clientY > rect.bottom;
-      if (isOutside) {
-        onClose();
-      }
-    };
-
-    dialog.addEventListener("pointerdown", handlePointerDown);
-    return () => dialog.removeEventListener("pointerdown", handlePointerDown);
-  }, [onClose]);
 
   const handleFileChange = (incoming: FileList | null) => {
     if (!incoming) return;
@@ -101,7 +67,6 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
         nameLower.endsWith(".xlsx") ||
         nameLower.endsWith(".csv")
       ) {
-        // Prevent duplicate file names
         if (!newFiles.some((f) => f.name === file.name)) {
           added.push(file);
         }
@@ -169,22 +134,22 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <dialog
-      ref={dialogRef}
-      aria-labelledby="modal-title"
-      onCancel={(e) => {
-        e.preventDefault();
-        onClose();
-      }}
-      closedby="any"
-    >
-      <div className="md">
-        <h2 id="modal-title">{titles[mode]}</h2>
-        <p className="sub">{subtitles[mode]}</p>
+    <div>
+      <button type="button" className="back" onClick={onClose} disabled={isSubmitting}>
+        ← {mode === "create" ? "Kembali ke daftar" : "Kembali ke detail"}
+      </button>
 
+      <div className="hd">
+        <div>
+          <h1 id="modal-title">{titles[mode]}</h1>
+          <p className="sub">{subtitles[mode]}</p>
+        </div>
+      </div>
+
+      <div className="md">
         {mode === "renew" ? (
           <>
-            <label className="f" htmlFor="modal-note">
+            <label className="f" htmlFor="modal-note" style={{ marginTop: 0 }}>
               Catatan perubahan (opsional)
             </label>
             <input
@@ -194,11 +159,12 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               disabled={isSubmitting}
+              autoFocus
             />
           </>
         ) : (
           <>
-            <label className="f" htmlFor="modal-name">
+            <label className="f" htmlFor="modal-name" style={{ marginTop: 0 }}>
               Nama knowledge
             </label>
             <input
@@ -347,6 +313,6 @@ export const KnowledgeModal: React.FC<KnowledgeModalProps> = ({
           )}
         </div>
       </div>
-    </dialog>
+    </div>
   );
 };

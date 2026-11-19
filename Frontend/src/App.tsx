@@ -45,7 +45,6 @@ export function App() {
 
   // Detail data
   const [detail, setDetail] = useState<KnowledgeDetailResponse | null>(null);
-  const [detailFullWidth, setDetailFullWidth] = useState(false);
 
   // Modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -246,6 +245,7 @@ export function App() {
         currentTab={currentNav}
         onTabChange={(tab) => {
           setCurrentNav(tab);
+          setModalOpen(false);
           if (tab === "knowledge") {
             setViewMode("list");
             setSelectedKid(null);
@@ -256,16 +256,20 @@ export function App() {
       <main className="mn">
         <TopBar theme={theme} onToggleTheme={toggleTheme} />
 
-        <div
-          className={`wrap ${
-            currentNav === "query" || (currentNav === "knowledge" && viewMode === "detail" && detailFullWidth)
-              ? "wrap-full"
-              : ""
-          }`}
-        >
+        <div className="wrap wrap-full">
           {currentNav === "knowledge" && (
             <>
-              {viewMode === "list" ? (
+              {modalOpen ? (
+                <KnowledgeModal
+                  isOpen={modalOpen}
+                  mode={modalMode}
+                  knowledge={detail}
+                  onClose={() => setModalOpen(false)}
+                  onSubmitCreate={handleCreateKnowledge}
+                  onSubmitDraft={handleUpdateDraft}
+                  onSubmitRenew={handleRenewKnowledge}
+                />
+              ) : viewMode === "list" ? (
                 <KnowledgeList
                   items={items}
                   counts={counts}
@@ -295,7 +299,6 @@ export function App() {
                     onStartProcess={handleStartProcess}
                     onDelete={handleDeleteKnowledge}
                     onToast={showToast}
-                    onFullWidthChange={setDetailFullWidth}
                   />
                 )
               )}
@@ -307,16 +310,6 @@ export function App() {
           )}
         </div>
       </main>
-
-      <KnowledgeModal
-        isOpen={modalOpen}
-        mode={modalMode}
-        knowledge={detail}
-        onClose={() => setModalOpen(false)}
-        onSubmitCreate={handleCreateKnowledge}
-        onSubmitDraft={handleUpdateDraft}
-        onSubmitRenew={handleRenewKnowledge}
-      />
 
       <Toast message={toastMessage} />
     </div>

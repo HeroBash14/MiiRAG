@@ -47,11 +47,17 @@ uv sync
 uv run alembic upgrade head
 ```
 
-### 4. Jalankan Server FastAPI:
+### 4. Jalankan Server Backend & MCP Sekaligus:
 ```bash
 uv run uvicorn app.main:app --reload --port 8000
+# atau:
+uv run python -m app.main
 ```
-Dokumentasi interaktif OpenAPI tersedia di `http://localhost:8000/docs`.
+- **Backend REST API & OpenAPI Docs**: `http://localhost:8000/docs`
+- **MCP Server (Otomatis berjalan bersamaan sesuai `.env`)**:
+  - Streamable HTTP: `http://localhost:8001/mcp`
+  - SSE Endpoint: `http://localhost:8001/sse`
+  - Health / Info MCP: `http://localhost:8001/health`
 
 ### 5. Jalankan Frontend Web UI:
 ```bash
@@ -71,4 +77,46 @@ uv run pytest -v
 
 # Memeriksa kualitas kode (linting)
 uv run ruff check app/ tests/
+```
+
+---
+
+## 🔌 Menjalankan MiiRAG MCP Server (Model Context Protocol)
+
+MiiRAG menyediakan server **MCP (Model Context Protocol)** di `app/mcp_server.py` untuk dihubungkan dengan AI Agent / LLM Client (seperti Claude Desktop, Cursor, Antigravity, Windsurf, atau VS Code):
+
+- **2 Tools (`list_knowledges` & `query_knowledge`)**:
+  - `list_knowledges`: Mengambil daftar Knowledge Base beserta UUID (`id`), nama, deskripsi, status, versi aktif, dan daftar file dokumen di dalamnya untuk dikirim ke parameter `knowledge_ids`.
+  - `query_knowledge`: Melakukan pencarian potongan dokumen (RAG retrieval) dengan dukungan penuh parameter `search_mode` (`hybrid`, `dense`, `keyword`), `use_rerank`, `use_query_expansion`, `use_graph`, `use_hyde`, `expand_context`, `top_k`, `score_threshold`, dan `knowledge_ids`. Deskripsi tool secara eksplisit mengarahkan AI Agent untuk membaca resource panduan terlebih dahulu.
+- **1 Resource (`miirag://guides/query-methods`)**: Menyediakan panduan lengkap penjelasan metode & parameter query, rekomendasi kombinasi preset, cara membaca skor hasil, serta tabel daftar Knowledge Base berstatus `done` yang aktif di database secara *real-time*.
+
+### Menjalankan via CLI:
+```bash
+# Mode stdio (Default untuk MCP Client desktop/IDE)
+uv run python -m app.mcp_server
+
+# Mode Streamable HTTP (misal di port 8001)
+uv run python -m app.mcp_server --transport streamable-http --host 127.0.0.1 --port 8001
+
+# Mode SSE
+uv run python -m app.mcp_server --transport sse --host 127.0.0.1 --port 8001
+```
+
+### Contoh Konfigurasi MCP Client (`mcp_config.json`):
+```json
+{
+  "mcpServers": {
+    "miirag": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/remibook/Desktop/Besmart/AI Agent Research/MiiRAG",
+        "run",
+        "python",
+        "-m",
+        "app.mcp_server"
+      ]
+    }
+  }
+}
 ```

@@ -84,6 +84,18 @@ class Settings(BaseSettings):
     KG_MAX_COOCCUR_EDGES_PER_NODE: int = 4
     KG_QUERY_MAX_EXPANDED_CHUNKS: int = 8
 
+    # Server Backend & MCP (Model Context Protocol)
+    BACKEND_HOST: str = "0.0.0.0"
+    BACKEND_PORT: int = 8000
+    MCP_ENABLED: bool = True
+    MCP_SERVER_NAME: str = "miirag-mcp"
+    MCP_TRANSPORT: str = "streamable-http"  # "streamable-http" atau "sse"
+    MCP_HOST: str = "0.0.0.0"
+    MCP_PORT: int = 8001
+    MCP_PATH: str = "/mcp"
+    MCP_SSE_PATH: str = "/sse"
+    MCP_MESSAGE_PATH: str = "/messages/"
+
     @property
     def max_upload_size_bytes(self) -> int:
         return self.MAX_UPLOAD_SIZE_MB * 1024 * 1024

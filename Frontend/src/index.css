@@ -228,12 +228,14 @@ select {
 }
 
 .wrap {
-  max-width: 1040px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
 }
 
 .wrap.wrap-full {
   max-width: 100%;
+  width: 100%;
 }
 
 /* Header & Controls */
@@ -676,8 +678,8 @@ dialog:modal {
   border: 0;
   background: transparent;
   color: var(--ink);
-  max-width: 540px;
-  width: 90vw;
+  max-width: 100%;
+  width: 96vw;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
   border-radius: 16px;
 }
@@ -692,11 +694,9 @@ dialog::backdrop {
 .md {
   background: var(--sf);
   color: var(--ink);
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1px solid var(--ln);
   width: 100%;
-  max-height: 88vh;
-  overflow-y: auto;
   padding: 24px;
 }
 

@@ -1,12 +1,14 @@
 import logging
 from contextlib import asynccontextmanager
 
+import uvicorn
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import check_db_health
+from app.mcp_server import start_mcp_background_server, stop_mcp_background_server
 from app.services.embedding_service import embedding_service
 from app.services.rerank_service import rerank_service
 
@@ -24,7 +26,18 @@ async def lifespan(_: FastAPI):
                 await rerank_service.preload()
         except Exception as exc:  # noqa: BLE001
             logger.warning("Preload model saat startup dilewati: %s", exc)
-    yield
+
+    if settings.MCP_ENABLED and settings.APP_ENV != "test":
+        try:
+            await start_mcp_background_server()
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Gagal menjalankan MCP background server: %s", exc)
+
+    try:
+        yield
+    finally:
+        if settings.MCP_ENABLED and settings.APP_ENV != "test":
+            await stop_mcp_background_server()
 
 
 app = FastAPI(
@@ -102,3 +115,12 @@ def custom_openapi() -> dict:
 
 
 app.openapi = custom_openapi
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "app.main:app",
+        host=settings.BACKEND_HOST,
+        port=settings.BACKEND_PORT,
+        reload=settings.APP_ENV == "development",
+    )

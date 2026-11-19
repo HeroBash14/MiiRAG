@@ -82,10 +82,20 @@ def test_extract_and_chunk_docx(tmp_path: Path) -> None:
     assert isinstance(snapshots, dict)
 
 
+def _find_fixture_file(filename: str, fallback_subdir: str) -> Path:
+    matches = list(Path("storage/uploads").glob(f"*/*{filename}"))
+    if matches:
+        return matches[0]
+    fallback = Path("/home/remibook/Downloads/TESTING RAG") / fallback_subdir / filename
+    if fallback.exists():
+        return fallback
+    raise FileNotFoundError(f"Fixture file {filename} tidak ditemukan.")
+
+
 def test_markdown_fidelity_pdf_tables_and_flowchart() -> None:
     from app.services.pdf_service import extract_and_chunk_document_with_snapshots
 
-    upload_file = next(Path("storage/uploads").glob("*/*SOP_Cafe.pdf"))
+    upload_file = _find_fixture_file("SOP_Cafe.pdf", "Cafe Document")
     page_count, chunks, snapshots = extract_and_chunk_document_with_snapshots(upload_file)
 
     assert page_count == 3
@@ -125,7 +135,7 @@ def test_markdown_fidelity_pdf_tables_and_flowchart() -> None:
 def test_markdown_fidelity_docx_tables_and_styles() -> None:
     from app.services.pdf_service import extract_and_chunk_document_with_snapshots
 
-    docx_file = next(Path("storage/uploads").glob("*/*SOP_Hotel.docx"))
+    docx_file = _find_fixture_file("SOP_Hotel.docx", "Hotel Document")
     page_count, chunks, snapshots = extract_and_chunk_document_with_snapshots(docx_file)
 
     assert page_count >= 1
@@ -149,7 +159,7 @@ def test_markdown_fidelity_docx_tables_and_styles() -> None:
 def test_docx_fallback_ast_markdown() -> None:
     from app.services.pdf_service import _extract_docx_fallback
 
-    docx_file = next(Path("storage/uploads").glob("*/*SOP_Hotel.docx"))
+    docx_file = _find_fixture_file("SOP_Hotel.docx", "Hotel Document")
     page_count, pages, snapshots = _extract_docx_fallback(docx_file)
 
     assert page_count == 1
